@@ -100,6 +100,9 @@ class LoginAPIView(APIView):
         try:
             # entered_usr = NewUser.objects.get(email=email)
             entered_usr = NewUser.objects.get(email__iexact=email)
+            if not entered_usr.is_verified:
+                message = {'message':'Email address not verified by otp'}
+                return Response(message, status=status.HTTP_401_UNAUTHORIZED)
         except:
             message = {'message':'No matching user found'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
