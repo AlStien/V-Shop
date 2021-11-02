@@ -94,8 +94,6 @@ class OTPView(APIView):
 
 class LoginAPIView(APIView):
     serializer_class = LoginUserSerializer
-    renderer_classes = (UserJSONRenderer,)
-
 
     def post(self, request):
         email = request.data.get("email",)
