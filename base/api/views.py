@@ -9,7 +9,6 @@ from .serializers import AccountSerializer, OtpSerializer, CheckVerify, LoginUse
 from django.http import HttpResponse, response
 from django.utils import timezone
 import datetime
-from .renderers import UserJSONRenderer
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
 class AccountList(APIView):
