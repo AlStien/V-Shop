@@ -9,7 +9,9 @@ from .serializers import AccountSerializer, OtpSerializer, CheckVerify, LoginUse
 from django.http import HttpResponse, response
 from django.utils import timezone
 import datetime
-
+from .renderers import UserJSONRenderer
+from base.models import NewUser
+from django.contrib.auth.hashers import check_password
 class AccountList(APIView):
     def get(self, request, format = None):
         notes = Entry.objects.all()
@@ -92,12 +94,29 @@ class OTPView(APIView):
 
 class LoginAPIView(APIView):
     serializer_class = LoginUserSerializer
+    renderer_classes = (UserJSONRenderer,)
+
 
     def post(self, request):
-        # user = request.data.get('user', {})
-        user = request.data
+        email = request.data.get("email",)
+        password = request.data.get("password",)
+        try:
+            # entered_usr = NewUser.objects.get(email=email)
+            entered_usr = NewUser.objects.get(email__iexact=email)
+        except:
+            message = {'message':'No matching user found'}
+            return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # entered_usr.password
+        # print(email,password)
 
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
+        # check_pswd returns True for match
+        if check_password(password,entered_usr.password ):
+            # print("akdfgkj")
+            message = {'message':'Login verified'}
+            return Response(message, status=status.HTTP_202_ACCEPTED)
+        message = {'message':'Incorrect password'}
+        return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+        # serializer = self.serializer_class(data=user)
+        # serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # return Response(serializer.data, status=status.HTTP_200_OK)

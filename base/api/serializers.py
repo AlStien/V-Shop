@@ -37,14 +37,15 @@ class LoginUserSerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get('email')
         password = data.get('password')
-
+        print(email,password)
+        
         if email is None:
             raise serializers.ValidationError('Email is required')
         if password is None:
             raise serializers.ValidationError('Password is required')
 
-        user = authenticate(email=email, password=password)
-
+        user = authenticate(username=email, password=password)
+        print(user)
         # user with provided credentials  not found
         if user is None:
             raise serializers.ValidationError('User with provided credentials not found')
