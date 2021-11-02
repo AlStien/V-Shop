@@ -1,5 +1,7 @@
 from django.urls import path
 
+from base.api.serializers import LoginUserSerializer
+
 from . import views
 
 urlpatterns = [
@@ -10,4 +12,5 @@ urlpatterns = [
     path('Account/delete-account/<int:pk>', views.AccountDetails.as_view(), name="delete-note"),
     path('Account/otp/', views.OTPView.send_otp, name="getNotes"),
     path('Account/otp/verify/', views.OTPView.as_view(), name="getNotes"),
+    path('Account/login/', views.LoginAPIView.as_view())
 ]
