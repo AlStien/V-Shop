@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from base.models import NewUser as Entry, OTP
-from .serializers import AccountSerializer, OtpSerializer, CheckVerify
+from .serializers import AccountSerializer, OtpSerializer, CheckVerify, LoginUserSerializer
 from django.http import HttpResponse, response
 from django.utils import timezone
 import datetime
@@ -89,3 +89,15 @@ class OTPView(APIView):
         # OTP doesn't match
         message = {'message':'OTP doesn\'t match'}
         return Response(message,status=status.HTTP_401_UNAUTHORIZED)
+
+class LoginAPIView(APIView):
+    serializer_class = LoginUserSerializer
+
+    def post(self, request):
+        # user = request.data.get('user', {})
+        user = request.data
+
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
