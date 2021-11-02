@@ -45,10 +45,10 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['user_name', 'name']
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return self.user_name
+        return self.name
 
 class OTP(models.Model):
     otp = models.IntegerField()
