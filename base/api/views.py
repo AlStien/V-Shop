@@ -1,16 +1,39 @@
-import collections
+import random
+from django.core.mail import send_mail
 from datetime import datetime
-from VShop import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from base.models import NewUser as Entry, OTP
-from .serializers import AccountSerializer, OtpSerializer, CheckVerify, LoginUserSerializer
-from django.http import HttpResponse, response
+from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
 from django.utils import timezone
 import datetime
+<<<<<<< HEAD
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
+=======
+<<<<<<< HEAD
+from django.db.models import Case, Value, When
+
+
+otp = random.randint(1000, 9999)
+
+# email = settings.EMAIL_HOST_USER
+def send_otp(email):
+    OTP.objects.filter(otpEmail__iexact = email).delete()
+    print(email)
+    send_mail(
+        "OTP for V-Shop Sign-Up.", f'Your One Time Password for signing up on V-Shop is {otp}.\nValid for only 5 minutes.\nDO NOT SHARE IT WITH ANYBODY.', 'drugged.to.art@gmail.com', [email], fail_silently=False
+    )
+
+    OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
+        
+
+=======
+from base.models import NewUser
+from django.contrib.auth.hashers import check_password
+>>>>>>> 7cb6d84764d5ae8e05368e7d29bbf840f92b008e
+>>>>>>> bba24e17e33b73d50b3d37063d230e5c414fb4ee
 class AccountList(APIView):
     def get(self, request, format = None):
         notes = Entry.objects.all()
@@ -27,7 +50,9 @@ class AccountList(APIView):
 
     def post(self, request, format = None):
         serializer = AccountSerializer(data=request.data)
+        email = request.data.get("email",)
         if serializer.is_valid():
+            send_otp(email)
             serializer.save()
         return Response(serializer.data)
 
@@ -53,35 +78,20 @@ class AccountDetails(APIView):
         note.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-import random
-from django.core.mail import send_mail
-
 class OTPView(APIView):
 
-    otp = random.randint(1000, 9999)
-    # email = settings.EMAIL_HOST_USER
-    def send_otp(email, otp=otp):
-        # OTP.objects.filter(email__iexact = email).delete()
-        print(email)
-        send_mail(
-            "OTP for V-Shop Sign-Up.", f'Your One Time Password for signing up on V-Shop is {otp}.\nValid for only 5 minutes.\nDO NOT SHARE IT WITH ANYBODY.', 'drugged.to.art@gmail.com', ['artistakshaybro22@gmail.com'], fail_silently=False
-        )
 
-        OTP.objects.create(otp = otp, email = email)
-        
-        return HttpResponse('otp')
-
-    def post(self, request, otp=otp, format = None):
+    def post(self, request, format = None):
         data_otp = request.data.get("otp",)
-        data_email = request.data.get("email",)
         # user = Entry.objects.get(email__iexact = data_email)
         current_time = timezone.now()
-        print(data_otp)
         print(otp)
         if str(data_otp) == str(otp):
             otp_obj = OTP.objects.get(otp=otp)
+            user = Entry.objects.filter(email = otp_obj.otpEmail)
             if otp_obj.time_created + datetime.timedelta(minutes=5) > current_time:
                 # OTP verified
+                user.update(is_verified = True)
                 message = {'message':'OTP verified'}
                 return Response(message,status=status.HTTP_202_ACCEPTED)
             # OTP expired
