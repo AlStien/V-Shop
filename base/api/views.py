@@ -8,6 +8,7 @@ from base.models import NewUser as Entry, OTP
 from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
 from django.utils import timezone
 import datetime
+<<<<<<< HEAD
 from django.db.models import Case, Value, When
 
 
@@ -24,6 +25,10 @@ def send_otp(email):
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
         
 
+=======
+from base.models import NewUser
+from django.contrib.auth.hashers import check_password
+>>>>>>> 7cb6d84764d5ae8e05368e7d29bbf840f92b008e
 class AccountList(APIView):
     def get(self, request, format = None):
         notes = Entry.objects.all()
@@ -95,10 +100,28 @@ class LoginAPIView(APIView):
     serializer_class = LoginUserSerializer
 
     def post(self, request):
-        # user = request.data.get('user', {})
-        user = request.data
+        email = request.data.get("email",)
+        password = request.data.get("password",)
+        try:
+            # entered_usr = NewUser.objects.get(email=email)
+            entered_usr = NewUser.objects.get(email__iexact=email)
+            if not entered_usr.is_verified:
+                message = {'message':'Email address not verified by otp'}
+                return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+        except:
+            message = {'message':'No matching user found'}
+            return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # entered_usr.password
+        # print(email,password)
 
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
+        # check_pswd returns True for match
+        if check_password(password,entered_usr.password ):
+            # print("akdfgkj")
+            message = {'message':'Login verified'}
+            return Response(message, status=status.HTTP_202_ACCEPTED)
+        message = {'message':'Incorrect password'}
+        return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+        # serializer = self.serializer_class(data=user)
+        # serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
