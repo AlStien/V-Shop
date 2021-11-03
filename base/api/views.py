@@ -10,7 +10,6 @@ from django.utils import timezone
 import datetime
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
-from django.db.models import Case, Value, When
 
 
 otp = random.randint(1000, 9999)
@@ -26,6 +25,8 @@ def send_otp(email):
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
         
 
+from base.models import NewUser
+from django.contrib.auth.hashers import check_password
 class AccountList(APIView):
     def get(self, request, format = None):
         notes = Entry.objects.all()
