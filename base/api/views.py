@@ -8,8 +8,8 @@ from base.models import NewUser as Entry, OTP
 from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
 from django.utils import timezone
 import datetime
-<<<<<<< HEAD
-from django.db.models import Case, Value, When
+from base.models import NewUser
+from django.contrib.auth.hashers import check_password
 
 
 otp = random.randint(1000, 9999)
@@ -25,10 +25,8 @@ def send_otp(email):
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
         
 
-=======
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
->>>>>>> 7cb6d84764d5ae8e05368e7d29bbf840f92b008e
 class AccountList(APIView):
     def get(self, request, format = None):
         notes = Entry.objects.all()
