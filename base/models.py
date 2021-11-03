@@ -53,7 +53,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
 
 class OTP(models.Model):
     otp = models.IntegerField()
-    email = models.EmailField()
+    otpEmail = models.EmailField()
     time_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
