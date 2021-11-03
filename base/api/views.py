@@ -9,10 +9,13 @@ from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
 from django.utils import timezone
 import datetime
 <<<<<<< HEAD
+<<<<<<< HEAD
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> bba24e17e33b73d50b3d37063d230e5c414fb4ee
 from django.db.models import Case, Value, When
 
 
@@ -33,6 +36,9 @@ def send_otp(email):
 from base.models import NewUser
 from django.contrib.auth.hashers import check_password
 >>>>>>> 7cb6d84764d5ae8e05368e7d29bbf840f92b008e
+<<<<<<< HEAD
+>>>>>>> bba24e17e33b73d50b3d37063d230e5c414fb4ee
+=======
 >>>>>>> bba24e17e33b73d50b3d37063d230e5c414fb4ee
 class AccountList(APIView):
     def get(self, request, format = None):
