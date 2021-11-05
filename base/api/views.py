@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from django.core.mail import EmailMultiAlternatives, message
-from django.shortcuts import redirect
+from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.hashers import make_password
 from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth.hashers import check_password
@@ -10,13 +10,19 @@ from base.models import NewUser, OTP
 from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
 from VShop.settings import EMAIL_HOST_USER
 import random
-import datetime
+import datetime, time
 
 # generating 4-digit OTP
 otp = random.randint(1000, 9999)
 # send otp to required email
-def send_otp(email):
+def send_otp(email, otp=otp):
+    if OTP.objects.filter(otp = otp).exists():
+        if(otp > 9000):
+            otp = random.randint(1000, otp)
+        else:
+            otp = random.randint(otp, 9999)
     OTP.objects.filter(otpEmail__iexact = email).delete()
+    print(otp)
 
     from_email, to = EMAIL_HOST_USER, email
     subject = "OTP for V-Shop Sign-Up"
@@ -96,7 +102,7 @@ class OTPView(APIView):
                 # OTP verified
                 user.update(is_verified = True)
                 user.update(is_active = True)
-                message = {'message':'OTP verified'}
+                message = {'message':'User verified'}
                 return Response(message,status=status.HTTP_202_ACCEPTED)
             # OTP expired
             message = {'message':'OTP expired'}
@@ -129,15 +135,34 @@ class LoginAPIView(APIView):
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
         # check_pswd returns True for match
 
-class ForgetResetPasswordView(APIView):
+class EmailVerifyView(APIView):
 
     def post(self, request):
         email = request.data.get("email",)
-        try:
-            entered_usr = NewUser.objects.get(email__iexact=email)
-            send_otp(entered_usr)
+        if NewUser.objects.filter(email = email).exists():
+            send_otp(email)
             message = {'message':'OTP sent to registered Email'}
             return Response(message, status=status.HTTP_202_ACCEPTED)
-        except:
+        else:
             message = {'message':'No matching user found'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+class PasswordChangeView(APIView):
+    def post(self, request):
+        email = request.data.get("email",)
+        password = request.data.get("new password")
+        if OTP.objects.filter(otpEmail = email).exists():
+            if NewUser.objects.filter(email = email).exists():
+                user = NewUser.objects.get(email = email)
+                if user.password == password:
+                    message = {'message':'Password cannot be same as old one'}
+                    return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+                else:
+                    user.password = make_password(password)
+                    user.save()
+                    message = {'message':'Password Changed Successfully'}
+                    return Response(message, status=status.HTTP_202_ACCEPTED)
+        else:
+            message = {'message':'Email entered does not match the verified Email.'}
+            return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
