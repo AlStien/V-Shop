@@ -12,15 +12,20 @@ from base.models import NewUser
 class Product_create_api(APIView):
     def post(self, request, format=None):
         seller_email = request.data.get('seller_email',)
-        seller_email_instance = NewUser.objects.get(email=seller_email)
+        try:
+            # getting the entered email user
+            seller_email_instance = NewUser.objects.get(email=seller_email)
+        except:
+            return Response(data = {'message':'user with entered email not found'},status=status.HTTP_401_UNAUTHORIZED)
+        # getting id for foreign key seller_email in Product model
+        seller_id = seller_email_instance.id
 
-        serializer = ProductSerializer(data = request.data)
+        data = request.data
+        # overrding post request data with seller_id
+        data['seller_email'] = seller_id
+        serializer = ProductSerializer(data = data)
+
         if serializer.is_valid():
-            serializer.save(email=seller_email_instance)
-            # serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
-        return HttpResponse(str(seller_email_instance.email))
-        
-        # seller_email = request.data.get('seller_email',)
-        # seller_email_instance = NewUser.objects.get(email=seller_email)
-        
+            serializer.save()
+            return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
+        return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
