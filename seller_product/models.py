@@ -23,7 +23,7 @@ class Product(models.Model):
         return self.no_of_sales*self.price
 
 # a product can have many comments so many-to-one relationship
-class Comments(models.Model):
+class Comment(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name="comment_product")
     author = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="author")
     # rating from 1 to 5 fromt end validation req
