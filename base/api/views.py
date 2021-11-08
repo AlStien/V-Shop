@@ -1,16 +1,15 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.auth.hashers import make_password
-from datetime import datetime
+from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
-from django.contrib.auth.hashers import check_password
 from base.models import NewUser, OTP
-from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
+from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, ProfileSerializer
 from VShop.settings import EMAIL_HOST_USER
-import random
-import datetime, time
+import random, datetime
+from base.models import NewUser
 
 # generating 4-digit OTP
 otp = random.randint(1000, 9999)
@@ -35,6 +34,8 @@ def send_otp(email, otp=otp):
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
 
 class AccountList(APIView):
+    permission_classes = (AllowAny,)
+    
     # get all account details 
     def get(self, request, format = None):
         users = NewUser.objects.all()
@@ -66,9 +67,9 @@ class AccountList(APIView):
 
 class AccountDetails(APIView):
     # get a specific account details
-    def get(self, request, pk, format = None):
-        pk = int(pk)
-        user = NewUser.objects.get(id=pk)
+    def get(self, request, format = None):
+        user = NewUser.objects.get(email = request.user.email)
+        # user = NewUser.objects.get(id=pk)
         serializer = AccountSerializer(user, many = False)
         return Response(serializer.data)
 
@@ -90,6 +91,7 @@ class AccountDetails(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class OTPView(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, format = None):
         data_otp = request.data.get("otp",)
@@ -136,6 +138,7 @@ class LoginAPIView(APIView):
         # check_pswd returns True for match
 
 class EmailVerifyView(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         email = request.data.get("email",)
