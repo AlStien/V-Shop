@@ -46,7 +46,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(_('email address'), validators=[EmailValidator()], unique=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True, default='none')
-    dateOfBirth = models.DateTimeField(blank=True, null=True, default=timezone.now)
+    dateOfBirth = models.DateTimeField(blank=True, null=True)
     picture = models.ImageField(upload_to = 'images' ,default = 'images/user.png')
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     mobile = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)])

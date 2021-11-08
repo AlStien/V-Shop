@@ -70,25 +70,37 @@ class AccountDetails(APIView):
     def get(self, request, format = None):
         user = NewUser.objects.get(email = request.user.email)
         # user = NewUser.objects.get(id=pk)
-        serializer = AccountSerializer(user, many = False)
+        serializer = ProfileSerializer(user, many = False)
         return Response(serializer.data)
 
     # update a specific account details
-    def put(self, request, pk, format = None):
-        email = request.data.get("email",)
-        user = NewUser.objects.get(email = email)
-        serializer = AccountSerializer(instance=user, data = request.data)
+    def put(self, request, format = None):
+        user = NewUser.objects.get(email = request.user.email)
+        serializer = ProfileSerializer(instance=user, data = request.data)
 
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data)
     
+    # # disable an account
+    # def disable(self, request, format=None):
+    #     try:
+    #         user = NewUser.objects.get(email = request.user.email)
+    #         user.is_active = False
+    #         message = {'message':'User Disabled'}
+    #         return Response(message, status=status.HTTP_204_NO_CONTENT)
+    #     except:
+    #         message = {'message':'User not found'}
+    #         return Response(message, status=status.HTTP_404_NOT_FOUND)
+
     # delete an account
     def delete(self, request, format = None):
-        email = request.data.get("email",)
-        user = NewUser.objects.get(email = email)
-        user.update(is_active = False)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            user = NewUser.objects.get(email = request.user.email)
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class OTPView(APIView):
     permission_classes = (AllowAny,)
@@ -114,6 +126,8 @@ class OTPView(APIView):
         return Response(message,status=status.HTTP_401_UNAUTHORIZED)
 
 class LoginAPIView(APIView):
+    permission_classes = (AllowAny,)
+
     serializer_class = LoginUserSerializer
 
     def post(self, request):
@@ -151,6 +165,8 @@ class EmailVerifyView(APIView):
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class PasswordChangeView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         email = request.data.get("email",)
         password = request.data.get("new password")
