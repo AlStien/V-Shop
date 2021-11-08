@@ -31,6 +31,9 @@ class Comment(models.Model):
     rating = models.IntegerField(default=1)
     content = models.CharField(max_length=300)
 
+    def __str__(self):
+        return self.content
+
 # a product can have many tags so many-to-one relationship
 class Tag(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name="tag_product")
