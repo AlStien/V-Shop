@@ -1,8 +1,10 @@
+from django.core import validators
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
+from django.core.validators import EmailValidator, MaxValueValidator, MinValueValidator
 
 class CustomAccountManager(BaseUserManager):
 
@@ -36,9 +38,19 @@ class CustomAccountManager(BaseUserManager):
 
 class NewUser(AbstractBaseUser, PermissionsMixin):
 
-    email = models.EmailField(_('email address'), unique=True, null=True)
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Others')
+    )
+
+    email = models.EmailField(_('email address'), validators=[EmailValidator()], unique=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True, default='none')
-    dateOfBirth = models.DateTimeField(blank=True, null=True, default=timezone.now)
+    dateOfBirth = models.DateTimeField(blank=True, null=True)
+    picture = models.ImageField(upload_to = 'images' ,default = 'images/user.png')
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+    mobile = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)])
+    is_seller = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)

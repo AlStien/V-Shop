@@ -24,3 +24,7 @@ class LoginUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)
 
+class ProfileSerializer(ModelSerializer):
+    class Meta:
+        model = NewUser
+        fields = ['email', 'name', 'dateOfBirth', 'gender', 'mobile', 'picture']

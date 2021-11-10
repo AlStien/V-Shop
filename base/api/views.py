@@ -1,16 +1,15 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.auth.hashers import make_password
-from datetime import datetime
+from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
-from django.contrib.auth.hashers import check_password
 from base.models import NewUser, OTP
-from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer
+from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, ProfileSerializer
 from VShop.settings import EMAIL_HOST_USER
-import random
-import datetime, time
+import random, datetime
+from base.models import NewUser
 
 # generating 4-digit OTP
 otp = random.randint(1000, 9999)
@@ -35,6 +34,8 @@ def send_otp(email, otp=otp):
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
 
 class AccountList(APIView):
+    permission_classes = (AllowAny,)
+    
     # get all account details 
     def get(self, request, format = None):
         users = NewUser.objects.all()
@@ -66,30 +67,43 @@ class AccountList(APIView):
 
 class AccountDetails(APIView):
     # get a specific account details
-    def get(self, request, pk, format = None):
-        pk = int(pk)
-        user = NewUser.objects.get(id=pk)
-        serializer = AccountSerializer(user, many = False)
+    def get(self, request, format = None):
+        user = NewUser.objects.get(email = request.user.email)
+        # user = NewUser.objects.get(id=pk)
+        serializer = ProfileSerializer(user, many = False)
         return Response(serializer.data)
 
     # update a specific account details
-    def put(self, request, pk, format = None):
-        email = request.data.get("email",)
-        user = NewUser.objects.get(email = email)
-        serializer = AccountSerializer(instance=user, data = request.data)
+    def put(self, request, format = None):
+        user = NewUser.objects.get(email = request.user.email)
+        serializer = ProfileSerializer(instance=user, data = request.data)
 
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data)
     
+    # # disable an account
+    # def disable(self, request, format=None):
+    #     try:
+    #         user = NewUser.objects.get(email = request.user.email)
+    #         user.is_active = False
+    #         message = {'message':'User Disabled'}
+    #         return Response(message, status=status.HTTP_204_NO_CONTENT)
+    #     except:
+    #         message = {'message':'User not found'}
+    #         return Response(message, status=status.HTTP_404_NOT_FOUND)
+
     # delete an account
     def delete(self, request, format = None):
-        email = request.data.get("email",)
-        user = NewUser.objects.get(email = email)
-        user.update(is_active = False)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            user = NewUser.objects.get(email = request.user.email)
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class OTPView(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, format = None):
         data_otp = request.data.get("otp",)
@@ -112,6 +126,8 @@ class OTPView(APIView):
         return Response(message,status=status.HTTP_401_UNAUTHORIZED)
 
 class LoginAPIView(APIView):
+    permission_classes = (AllowAny,)
+
     serializer_class = LoginUserSerializer
 
     def post(self, request):
@@ -136,6 +152,7 @@ class LoginAPIView(APIView):
         # check_pswd returns True for match
 
 class EmailVerifyView(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         email = request.data.get("email",)
@@ -148,6 +165,8 @@ class EmailVerifyView(APIView):
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class PasswordChangeView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         email = request.data.get("email",)
         password = request.data.get("new password")
