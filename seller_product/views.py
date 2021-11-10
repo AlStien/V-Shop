@@ -2,9 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from base.models import NewUser
 from seller_product.models import Product, Tag
 
-from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer
+from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSeller
 
 # is_seller check pending
 
@@ -72,4 +73,10 @@ class Tag_add_api(APIView):
         else:
             return Response(data = {'message': 'enter a tag'}, status=status.HTTP_400_BAD_REQUEST)
 
+# TO get all the products added by the logged in seller
+class Product_view_seller_api(APIView):
 
+    def get(self, request, format=None):
+        products = request.user.seller_email.all()
+        serialized_notes = ProductsViewSeller(products, many=True)
+        return Response(serialized_notes.data)
