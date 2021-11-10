@@ -1,4 +1,4 @@
 *.env
 *.pyo
 *.pyc
-*.sqlite3
+db.sqlite3
