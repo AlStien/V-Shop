@@ -9,6 +9,7 @@ class Product(models.Model):
     seller_email = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="seller_email")
     name = models.CharField(max_length=100)
     price = models.IntegerField()
+    picture = models.ImageField(upload_to = 'products' ,default = f'products/{product_id}.png')
     brand = models.CharField(max_length=50)
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0)
