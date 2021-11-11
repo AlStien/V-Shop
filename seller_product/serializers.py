@@ -22,8 +22,8 @@ class TagSerializer(ModelSerializer):
         model = Tag
         fields = ['tag']
 
-class ProductsViewSeller(ModelSerializer):
+# class ProductsViewSeller(ModelSerializer):
     
-    class Meta:
-        model = Product
-        fields = '__all__'
+#     class Meta:
+#         model = Product
+#         fields = '__all__'

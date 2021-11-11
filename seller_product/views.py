@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from base.models import NewUser
 from seller_product.models import Product, Tag
 
-from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSeller
+from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 
 # is_seller check pending
 
@@ -82,6 +82,10 @@ class Tag_add_api(APIView):
 
 # TO get all the products added by the logged in seller
 # class Product_view_seller_api(APIView):
+    # def get(self, request, format=None):
+    #     products = request.user.seller_email.all()
+    #     serialized_notes = ProductsViewSeller(products, many=True)
+    #     return Response(serialized_notes.data)
 class WishlistView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -97,7 +101,3 @@ class WishlistView(APIView):
         product.wishlist_user.add(user)
         return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)
 
-    def get(self, request, format=None):
-        products = request.user.seller_email.all()
-        serialized_notes = ProductsViewSeller(products, many=True)
-        return Response(serialized_notes.data)
