@@ -2,12 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from .models import Product
+from base.models import NewUser
 
-from seller_product.serializers import ProductSerializer, CommentSerializer
+from seller_product.serializers import ProductSerializer, CommentSerializer, ProductsViewSerializer
 
-class Product_create_api(APIView):
+class ProductView(APIView):
 
     permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        data = Product.objects.all()
+        serializer = ProductsViewSerializer(data, many = True)
+        return Response(serializer.data)
     
     def post(self, request, format=None):
         try:
@@ -15,15 +21,18 @@ class Product_create_api(APIView):
             # getting id for foreign key seller_email in Product model
             data = request.data
             data['seller_email'] = request.user.id
+            user = NewUser.objects.get(email = request.user.email)
         except:
             return Response(data = {'message':'user not found'},status=status.HTTP_401_UNAUTHORIZED)
+        if user.is_seller:
+            serializer = ProductSerializer(data = data)
 
-        serializer = ProductSerializer(data = data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
-        return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
+            return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response(data = {'message': 'User not a seller'},status=status.HTTP_401_UNAUTHORIZED)
 
 class Comment_add_api(APIView):
 
@@ -43,5 +52,18 @@ class Comment_add_api(APIView):
             return Response(data = {'message': 'added comment'}, status=status.HTTP_201_CREATED)
         return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
 
+class WishlistView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request, format=None):
+        user = NewUser.objects.get(id = request.user.id)
+        products = Product.objects.filter(wishlist_user = user)
+        serializer = ProductsViewSerializer(products, many = True)
+        return Response(serializer.data)
+    
+    def put(self, request, format=None):
+        user = NewUser.objects.get(email = request.user.email)
+        product = Product.objects.get(product_id = request.data.get("id",))
+        product.wishlist_user.add(user)
+        return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)
 
