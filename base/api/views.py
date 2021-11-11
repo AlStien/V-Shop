@@ -1,7 +1,8 @@
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
@@ -184,4 +185,24 @@ class PasswordChangeView(APIView):
         else:
             message = {'message':'Email entered does not match the verified Email.'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
+class BecomeSellerView(APIView):
+
+    permission_classes = [IsAuthenticated,]
+    def get(self, request, format = None):
+        users = NewUser.objects.filter(is_seller = True)
+        serializer = ProfileSerializer(users, many = True)
+        return Response(serializer.data)
+
+    def put(self, request, format=None):
+        
+        email = request.user.email
+
+        if OTP.objects.filter(otpEmail = email).exists():
+            if NewUser.objects.filter(email = email).exists():
+                user = NewUser.objects.get(email = request.user.email)
+                user.is_seller = True
+                user.save()
+                serializer = ProfileSerializer(user, many=False)
+                return Response(serializer.data)  
+        return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  

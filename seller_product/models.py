@@ -9,10 +9,12 @@ class Product(models.Model):
     seller_email = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="seller_email")
     name = models.CharField(max_length=100)
     price = models.IntegerField()
-    picture = models.ImageField(upload_to = 'products' ,default = f'products/{product_id}.png')
+    picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
     brand = models.CharField(max_length=50)
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0)
+
+    wishlist_user = models.ManyToManyField(NewUser)
 
     def __str__(self):
         return self.name
@@ -37,5 +39,5 @@ class Comment(models.Model):
 
 # a product can have many tags so many-to-one relationship
 class Tag(models.Model):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name="tag_product")
-    tag = models.CharField(max_length=30)
+    product = models.ManyToManyField(Product, related_name="tag_product")
+    tag = models.CharField(max_length=30, unique=True)
