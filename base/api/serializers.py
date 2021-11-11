@@ -1,6 +1,6 @@
-from base.models import NewUser
+from base.models import NewUser, OTP
 from rest_framework.serializers import ModelSerializer
-from rest_framework import serializers
+from rest_framework import fields, serializers
 
 class AccountSerializer(ModelSerializer):
     class Meta:
@@ -19,6 +19,11 @@ class CheckVerify(ModelSerializer):
     class Meta:
         model = NewUser
         fields = ['is_verified']
+
+class OTPSerializer(ModelSerializer):
+    class Meta:
+        model = OTP
+        fields = ['otp', 'otpEmail']
 
 class LoginUserSerializer(serializers.Serializer):
     email = serializers.EmailField()

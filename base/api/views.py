@@ -7,15 +7,15 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 from base.models import NewUser, OTP
-from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, ProfileSerializer
+from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, ProfileSerializer, OTPSerializer
 from VShop.settings import EMAIL_HOST_USER
 import random, datetime
 from base.models import NewUser
 
 # generating 4-digit OTP
-otp = random.randint(1000, 9999)
 # send otp to required email
-def send_otp(email, otp=otp):
+def send_otp(email):
+    otp = random.randint(1000, 9999)
     if OTP.objects.filter(otp = otp).exists():
         if(otp > 9000):
             otp = random.randint(1000, otp)
@@ -98,33 +98,41 @@ class AccountDetails(APIView):
     def delete(self, request, format = None):
         try:
             user = NewUser.objects.get(email = request.user.email)
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            print("yay")
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        user.delete()
+        return Response({'message': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 class OTPView(APIView):
     permission_classes = (AllowAny,)
 
+    def get(self, request, format=None):
+        data = OTP.objects.all()
+        return Response(OTPSerializer(data, many=True).data)
+
     def post(self, request, format = None):
-        data_otp = request.data.get("otp",)
+        data_otp = request.data.get("otp")
         current_time = timezone.now()
-        # print(otp)
-        if str(data_otp) == str(otp):
-            otp_obj = OTP.objects.get(otp=otp)
-            user = NewUser.objects.filter(email = otp_obj.otpEmail)
-            if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
-                # OTP verified
-                user.update(is_verified = True)
-                user.update(is_active = True)
-                message = {'message':'User verified'}
-                return Response(message,status=status.HTTP_202_ACCEPTED)
-            # OTP expired
-            message = {'message':'OTP expired'}
-            return Response(message,status=status.HTTP_400_BAD_REQUEST)
-        # OTP doesn't match
-        message = {'message':'OTP doesn\'t match'}
-        return Response(message,status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            otp = str(OTP.objects.get(otp = data_otp))
+        except:
+            # OTP doesn't match
+            message = {'message':'OTP doesn\'t match'}
+            return Response(message,status=status.HTTP_401_UNAUTHORIZED)
+        print(otp)
+        print(data_otp)
+        otp_obj = OTP.objects.get(otp=otp)
+        user = NewUser.objects.filter(email = otp_obj.otpEmail)
+        if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
+            # OTP verified
+            user.update(is_verified = True)
+            user.update(is_active = True)
+            message = {'message':'User verified'}
+            return Response(message,status=status.HTTP_202_ACCEPTED)
+        # OTP expired
+        message = {'message':'OTP expired'}
+        return Response(message,status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
