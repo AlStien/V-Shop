@@ -39,5 +39,5 @@ class Comment(models.Model):
 
 # a product can have many tags so many-to-one relationship
 class Tag(models.Model):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name="tag_product")
-    tag = models.CharField(max_length=30)
+    product = models.ManyToManyField(Product, related_name="tag_product")
+    tag = models.CharField(max_length=30, unique=True)
