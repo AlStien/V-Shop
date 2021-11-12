@@ -12,9 +12,9 @@ from VShop.settings import EMAIL_HOST_USER
 import random, datetime
 from base.models import NewUser
 
-# generating 4-digit OTP
 # send otp to required email
 def send_otp(email):
+    # generating 4-digit OTP
     otp = random.randint(1000, 9999)
     if OTP.objects.filter(otp = otp).exists():
         if(otp > 9000):
@@ -96,9 +96,12 @@ class AccountDetails(APIView):
 
     # delete an account
     def delete(self, request, format = None):
+        email = request.data.get("email",)
         try:
-            user = NewUser.objects.get(email = request.user.email)
-            print("yay")
+            if request.user.email == email:
+                user = NewUser.objects.get(email = request.user.email)
+            else:
+                return Response({'message':'wrong email entered'}, status=status.HTTP_401_UNAUTHORIZED)
         except:
             return Response({'message': 'Not Found'}, status=status.HTTP_404_NOT_FOUND)
         user.delete()

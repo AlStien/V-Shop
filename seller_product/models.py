@@ -14,7 +14,8 @@ class Product(models.Model):
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0)
 
-    wishlist_user = models.ManyToManyField(NewUser)
+    wishlist_user = models.ManyToManyField(NewUser, related_name='wishlist')
+    cart_user = models.ManyToManyField(NewUser, related_name='cart')
 
     def __str__(self):
         return self.name

@@ -101,3 +101,17 @@ class WishlistView(APIView):
         product.wishlist_user.add(user)
         return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)
 
+class CartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user = NewUser.objects.get(id = request.user.id)
+        products = Product.objects.filter(cart_user = user)
+        serializer = ProductsViewSerializer(products, many = True)
+        return Response(serializer.data)
+    
+    def put(self, request, format=None):
+        user = NewUser.objects.get(email = request.user.email)
+        product = Product.objects.get(product_id = request.data.get("id",))
+        product.cart_user.add(user)
+        return Response(data = {'message': 'added product to cart'}, status=status.HTTP_201_CREATED)
