@@ -151,4 +151,4 @@ class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name']
+    search_fields = ['name','tag_product__tag']
