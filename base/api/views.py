@@ -116,26 +116,26 @@ class OTPView(APIView):
 
     def post(self, request, format = None):
         data_otp = request.data.get("otp")
-        current_time = timezone.now()
-        try:
-            otp = str(OTP.objects.get(otp = data_otp))
-        except:
-            # OTP doesn't match
+        data_email = request.data.get("email",)
+        if OTP.objects.get(otp = data_otp) == OTP.objects.get(otpEmail = data_email):
+            otp_obj = OTP.objects.get(otp = data_otp)
+            current_time = timezone.now()
+            print(otp_obj)
+            print(data_otp)
+            user = NewUser.objects.filter(email = otp_obj.otpEmail)
+            if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
+                # OTP verified
+                user.update(is_verified = True)
+                user.update(is_active = True)
+                message = {'message':'User verified'}
+                return Response(message,status=status.HTTP_202_ACCEPTED)
+            # OTP expired
+            message = {'message':'OTP expired'}
+            return Response(message,status=status.HTTP_400_BAD_REQUEST)
+        # OTP doesn't match
+        else:
             message = {'message':'OTP doesn\'t match'}
             return Response(message,status=status.HTTP_401_UNAUTHORIZED)
-        print(otp)
-        print(data_otp)
-        otp_obj = OTP.objects.get(otp=otp)
-        user = NewUser.objects.filter(email = otp_obj.otpEmail)
-        if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
-            # OTP verified
-            user.update(is_verified = True)
-            user.update(is_active = True)
-            message = {'message':'User verified'}
-            return Response(message,status=status.HTTP_202_ACCEPTED)
-        # OTP expired
-        message = {'message':'OTP expired'}
-        return Response(message,status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
