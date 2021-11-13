@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -165,6 +164,17 @@ class LoginAPIView(APIView):
 
 class EmailVerifyView(APIView):
     permission_classes = (AllowAny,)
+
+    def get(self, request, format = None):
+        email = request.data.get("email")
+        if NewUser.objects.filter(email = email).exists():
+            user = NewUser.objects.get(email = email)
+            seraializer = CheckVerify(user)
+            return Response(seraializer.data, status=status.HTTP_202_ACCEPTED)
+        else:
+            message = {'message':'No matching user found'}
+            return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+            
 
     def post(self, request):
         email = request.data.get("email",)
