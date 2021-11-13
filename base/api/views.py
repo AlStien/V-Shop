@@ -114,27 +114,35 @@ class OTPView(APIView):
         return Response(OTPSerializer(data, many=True).data)
 
     def post(self, request, format = None):
-        data_otp = request.data.get("otp")
+        data_otp = request.data.get("otp",)
         data_email = request.data.get("email",)
-        if OTP.objects.get(otp = data_otp) == OTP.objects.get(otpEmail = data_email):
-            otp_obj = OTP.objects.get(otp = data_otp)
-            current_time = timezone.now()
-            print(otp_obj)
-            print(data_otp)
-            user = NewUser.objects.filter(email = otp_obj.otpEmail)
-            if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
-                # OTP verified
-                user.update(is_verified = True)
-                user.update(is_active = True)
-                message = {'message':'User verified'}
-                return Response(message,status=status.HTTP_202_ACCEPTED)
-            # OTP expired
+        user = OTP.objects.get(otpEmail = data_email)
+        current_time = timezone.now()
+        print(current_time)
+        print(user.time_created)
+        # OTP expired
+        if user.time_created + datetime.timedelta(minutes=3) < current_time:
             message = {'message':'OTP expired'}
             return Response(message,status=status.HTTP_400_BAD_REQUEST)
-        # OTP doesn't match
         else:
-            message = {'message':'OTP doesn\'t match'}
-            return Response(message,status=status.HTTP_401_UNAUTHORIZED)
+            if OTP.objects.filter(otp = data_otp).exists() and (OTP.objects.get(otp = data_otp) == OTP.objects.get(otpEmail = data_email)):
+                otp_obj = OTP.objects.get(otp = data_otp)
+                print(otp_obj)
+                print(data_otp)
+                user = NewUser.objects.filter(email = otp_obj.otpEmail)
+                if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
+                    # OTP verified
+                    user.update(is_verified = True)
+                    user.update(is_active = True)
+                    message = {'message':'User verified'}
+                    return Response(message,status=status.HTTP_202_ACCEPTED)
+                # OTP expired
+                message = {'message':'OTP expired'}
+                return Response(message,status=status.HTTP_400_BAD_REQUEST)
+            # OTP doesn't match
+            else:
+                message = {'message':'OTP doesn\'t match'}
+                return Response(message,status=status.HTTP_401_UNAUTHORIZED)
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
