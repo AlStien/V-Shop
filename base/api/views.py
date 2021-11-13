@@ -150,7 +150,7 @@ class LoginAPIView(APIView):
                 if not entered_usr.is_verified:
                     message = {'message':'Email address not verified by otp. Please Verify.'}
                     send_otp(email)
-                    return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response(message, status=status.HTTP_503_SERVICE_UNAVAILABLE)
                 else:
                     message = {'message':'Login verified'}
                     return Response(message, status=status.HTTP_202_ACCEPTED)
