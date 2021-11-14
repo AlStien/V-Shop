@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from base.models import NewUser
 from seller_product.models import Product, Tag, Cart, OrderDetails
 from rest_framework import filters
@@ -13,14 +13,15 @@ from seller_product.serializers import (
 )
 # is_seller check pending
 
-class ProductView(APIView):
-
-    permission_classes = [IsAuthenticated]
+class ProductsView(APIView):
+    permission_classes = [AllowAny,]
     def get(self, request, format=None):
         data = Product.objects.all()
         serializer = ProductsViewSerializer(data, many = True)
         return Response(serializer.data)
     
+class ProductView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         try:
             # overrding post request data with seller_id
@@ -154,15 +155,34 @@ class CartView(APIView):
         quantity = int(request.data.get("quantity",))
         user = NewUser.objects.get(id = request.user.id)
         if Cart.objects.filter(cart_user = user).exists():
-            print('yayy')
             user_cart = Cart.objects.get(cart_user = user)
         else:
-            print('ok')
             user_cart = Cart.objects.create(cart_user = user)
-        OrderDetails.objects.create(product = product, cart_user = user_cart, 
-                            quantity = quantity, price = (product.price * quantity))
+        if OrderDetails.objects.filter(product=product, cart_user = user_cart).exists():
+            order = OrderDetails.objects.get(product=product, cart_user = user_cart)
+            order.quantity = order.quantity + quantity
+            order.save()
+        else:
+            OrderDetails.objects.create(product = product, cart_user = user_cart, 
+                                quantity = quantity, price = (product.price * quantity))
         # products = Product.objects.filter(cart = user_cart)
         return Response(data = {'message': 'added product to cart'}, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, format = None):
+        product = Product.objects.get(id = request.data.get("id",))
+        user = NewUser.objects.get(id = request.user.id)
+        user_cart = Cart.objects.get(cart_user = user)
+        try:
+            order = OrderDetails.objects.get(product=product, cart_user = user_cart)
+            order.quantity = order.quantity - 1
+            if order.quantity > 0:
+                order.save()
+                return Response({'message': 'removed 1 item from Cart'}, status=status.HTTP_205_RESET_CONTENT)
+            else:
+                order.delete()
+                return Response({'message': 'Product removed from Cart'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
 
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
