@@ -95,14 +95,8 @@ class AccountDetails(APIView):
 
     # delete an account
     def delete(self, request, format = None):
-        email = request.data.get("email",)
-        try:
-            if request.user.email == email:
-                user = NewUser.objects.get(email = request.user.email)
-            else:
-                return Response({'message':'wrong email entered'}, status=status.HTTP_401_UNAUTHORIZED)
-        except:
-            return Response({'message': 'Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        email = request.user.email
+        user = NewUser.objects.get(email = email)
         user.delete()
         return Response({'message': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)
 
