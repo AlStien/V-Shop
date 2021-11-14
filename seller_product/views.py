@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from base.models import NewUser
-from seller_product.models import Product, Tag, Cart, OrderDetails
+from seller_product.models import Comment, Product, Tag, Cart, OrderDetails
 from rest_framework import filters
 from seller_product.serializers import (
     ProductSerializer, 
@@ -11,6 +11,9 @@ from seller_product.serializers import (
     OrderViewSerializer,
     ProductsViewSerializer,
 )
+from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
+# from django_filters.rest_framework import DjangoFilterBackend
+
 # is_seller check pending
 
 class ProductsView(APIView):
@@ -81,7 +84,7 @@ class ProductView(APIView):
 class Comment_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request, format=None):
         try:
             data = request.data
@@ -96,10 +99,64 @@ class Comment_add_api(APIView):
             return Response(data = {'message': 'added comment'}, status=status.HTTP_201_CREATED)
         return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
 
+    def delete(self, request, format=None):
+        data = request.data
+        data['author'] = request.user.id
+        try:
+            comment = Comment.objects.get(id=data['id'])
+            # To verify if the comment is published by the same author
+            usr = NewUser.objects.get(id=data['author'])
+            if str(comment.author) == str(usr.name):
+                comment.delete()
+                return Response(data={'message':'Comment deleted'},status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(data={'message':'You can delete your comment only'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response(data={'message':'Comment not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, format=None):
+        data = request.data
+        data['author'] = request.user.id
+        try:
+            comment = Comment.objects.get(id=data['id'])
+            # To verify if the comment is published by the same author
+            usr = NewUser.objects.get(id=data['author'])
+            if str(comment.author) == str(usr.name):
+                serializer = CommentSerializer(comment, data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(data={'message':'invalid data entered'},status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(data={'message':'You can update your comment only'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response(data={'message':'Comment not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+class Comment_view_api(APIView):
+    # to get comments for a particular product
+    def get(self, request, format=None):
+        data = request.data
+        comment = Comment.objects.filter(product=data['product'])
+        if comment.exists():
+            serializer = CommentSerializer(comment, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(data = {'message':'comments not found'}, status=status.HTTP_400_BAD_REQUEST)
+
 class Tag_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
     
+    # for getting tags of a particular product
+    def get(self, request, format=None):
+        data = request.data
+        tag = Tag.objects.filter(product=data['product'])
+        if tag.exists():
+            serializer = TagSerializer(tag, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(data = {'message':'product not found'}, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request, format=None):
         # getting product
         try:
@@ -118,7 +175,7 @@ class Tag_add_api(APIView):
             except:
                 t = Tag.objects.create(tag=request.data['tag'])
                 t.product.add(p)
-                return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
+                return Response(data = {'message': 'tag saved sucessfully'}, status=status.HTTP_201_CREATED)
         else:
             return Response(data = {'message': 'enter a tag'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -187,5 +244,10 @@ class CartView(APIView):
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name']
+    # djangoFilterBackend not working
+    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name','tag_product__tag','brand']
+    ordering_fields = ['name','price','brand']
+    # default ordering
+    ordering = ['price']
