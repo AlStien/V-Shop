@@ -14,7 +14,7 @@ class ProductsViewSerializer(ModelSerializer):
 class CommentSerializer(ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['author', 'product', 'rating', 'content']
+        fields = ['id','author', 'product', 'rating', 'content']
 
 class TagSerializer(ModelSerializer):
 
