@@ -9,8 +9,14 @@ from seller_product.serializers import ProductSerializer, CommentSerializer, Tag
 # from django_filters.rest_framework import DjangoFilterBackend
 # is_seller check pending
 
+class ProductsView(APIView):
+    permission_classes = [AllowAny,]
+    def get(self, request, format=None):
+        data = Product.objects.all()
+        serializer = ProductsViewSerializer(data, many = True)
+        return Response(serializer.data)
+    
 class ProductView(APIView):
-
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         data = Product.objects.all()
