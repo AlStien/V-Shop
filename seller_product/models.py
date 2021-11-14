@@ -28,11 +28,20 @@ class Product(models.Model):
 
 # a product can have many comments so many-to-one relationship
 class Comment(models.Model):
+
+    rating_choices = [
+        (1,'poor'),
+        (2,'unsatisfactory'),
+        (3,'average'),
+        (4,'good'),
+        (5,'excellent')
+    ]
+
     product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name="comment_product")
     author = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="author")
     # rating from 1 to 5 fromt end validation req
     # rating = models.IntegerField(default=1,validators=[MaxLengthValidator(1)])
-    rating = models.IntegerField(default=1)
+    rating = models.CharField(max_length=1, choices=rating_choices, default=1)
     content = models.CharField(max_length=300)
 
     def __str__(self):

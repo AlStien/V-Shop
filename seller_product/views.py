@@ -6,7 +6,7 @@ from base.models import NewUser
 from seller_product.models import Comment, Product, Tag
 from rest_framework import filters
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
-
+# from django_filters.rest_framework import DjangoFilterBackend
 # is_seller check pending
 
 class ProductView(APIView):
@@ -91,6 +91,39 @@ class Comment_add_api(APIView):
             return Response(data = {'message': 'added comment'}, status=status.HTTP_201_CREATED)
         return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
 
+    def delete(self, request, format=None):
+        data = request.data
+        data['author'] = request.user.id
+        try:
+            comment = Comment.objects.get(id=data['id'])
+            # To verify if the comment is published by the same author
+            usr = NewUser.objects.get(id=data['author'])
+            if str(comment.author) == str(usr.name):
+                comment.delete()
+                return Response(data={'message':'Comment deleted'},status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(data={'message':'You can delete your comment only'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response(data={'message':'Comment not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, format=None):
+        data = request.data
+        data['author'] = request.user.id
+        try:
+            comment = Comment.objects.get(id=data['id'])
+            # To verify if the comment is published by the same author
+            usr = NewUser.objects.get(id=data['author'])
+            if str(comment.author) == str(usr.name):
+                serializer = CommentSerializer(comment, data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(data={'message':'invalid data entered'},status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(data={'message':'You can update your comment only'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response(data={'message':'Comment not found'}, status=status.HTTP_400_BAD_REQUEST)
+
 class Comment_view_api(APIView):
     # to get comments for a particular product
     def get(self, request, format=None):
@@ -171,5 +204,10 @@ class CartView(APIView):
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name','tag_product__tag']
+    # djangoFilterBackend not working
+    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name','tag_product__tag','brand']
+    ordering_fields = ['name','price','brand']
+    # default ordering
+    ordering = ['price']
