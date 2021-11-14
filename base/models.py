@@ -44,7 +44,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
         ('O', 'Others')
     )
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(_('email address'), validators=[EmailValidator()], unique=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True, default='none')
     dateOfBirth = models.DateTimeField(blank=True, null=True)

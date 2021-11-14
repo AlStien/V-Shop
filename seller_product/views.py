@@ -1,12 +1,19 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from base.models import NewUser
-from seller_product.models import Comment, Product, Tag
+from seller_product.models import Comment, Product, Tag, Cart, OrderDetails
 from rest_framework import filters
+from seller_product.serializers import (
+    ProductSerializer, 
+    CommentSerializer, 
+    OrderViewSerializer,
+    ProductsViewSerializer,
+)
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 # from django_filters.rest_framework import DjangoFilterBackend
+
 # is_seller check pending
 
 class ProductsView(APIView):
@@ -18,11 +25,6 @@ class ProductsView(APIView):
     
 class ProductView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
-        data = Product.objects.all()
-        serializer = ProductsViewSerializer(data, many = True)
-        return Response(serializer.data)
-    
     def post(self, request, format=None):
         try:
             # overrding post request data with seller_id
@@ -53,7 +55,7 @@ class ProductView(APIView):
             return Response(data = {'message':'user not found'},status=status.HTTP_401_UNAUTHORIZED)
 
         if user.is_seller:
-            product = Product.objects.get(product_id=data['product_id'])
+            product = Product.objects.get(id=data['id'])
             serializer = ProductSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -73,7 +75,7 @@ class ProductView(APIView):
             return Response(data = {'message':'user not found'},status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            product = Product.objects.get(product_id=data['product_id'])
+            product = Product.objects.get(id=data['id'])
             product.delete()
             return Response(data={'message':'Product deleted'},status=status.HTTP_204_NO_CONTENT)
         except:
@@ -158,7 +160,7 @@ class Tag_add_api(APIView):
     def post(self, request, format=None):
         # getting product
         try:
-            p = Product.objects.get(product_id=request.data['product'])
+            p = Product.objects.get(id=request.data['product'])
         except:
             return Response(data = {'message': 'product not found'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -188,7 +190,7 @@ class WishlistView(APIView):
     
     def put(self, request, format=None):
         user = NewUser.objects.get(email = request.user.email)
-        product = Product.objects.get(product_id = request.data.get("id",))
+        product = Product.objects.get(id = request.data.get("id",))
         product.wishlist_user.add(user)
         return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)
 
@@ -197,15 +199,47 @@ class CartView(APIView):
 
     def get(self, request, format=None):
         user = NewUser.objects.get(id = request.user.id)
-        products = Product.objects.filter(cart_user = user)
-        serializer = ProductsViewSerializer(products, many = True)
+        if Cart.objects.filter(cart_user = user).exists():
+            cart = Cart.objects.get(cart_user = user)
+        else:
+            cart = Cart.objects.create(cart_user = user)
+        products = OrderDetails.objects.filter(cart_user = cart)
+        serializer = OrderViewSerializer(products, many = True)
         return Response(serializer.data)
     
     def put(self, request, format=None):
-        user = NewUser.objects.get(email = request.user.email)
-        product = Product.objects.get(product_id = request.data.get("id",))
-        product.cart_user.add(user)
+        product = Product.objects.get(id = request.data.get("id",))
+        quantity = int(request.data.get("quantity",))
+        user = NewUser.objects.get(id = request.user.id)
+        if Cart.objects.filter(cart_user = user).exists():
+            user_cart = Cart.objects.get(cart_user = user)
+        else:
+            user_cart = Cart.objects.create(cart_user = user)
+        if OrderDetails.objects.filter(product=product, cart_user = user_cart).exists():
+            order = OrderDetails.objects.get(product=product, cart_user = user_cart)
+            order.quantity = order.quantity + quantity
+            order.save()
+        else:
+            OrderDetails.objects.create(product = product, cart_user = user_cart, 
+                                quantity = quantity, price = (product.price * quantity))
+        # products = Product.objects.filter(cart = user_cart)
         return Response(data = {'message': 'added product to cart'}, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, format = None):
+        product = Product.objects.get(id = request.data.get("id",))
+        user = NewUser.objects.get(id = request.user.id)
+        user_cart = Cart.objects.get(cart_user = user)
+        try:
+            order = OrderDetails.objects.get(product=product, cart_user = user_cart)
+            order.quantity = order.quantity - 1
+            if order.quantity > 0:
+                order.save()
+                return Response({'message': 'removed 1 item from Cart'}, status=status.HTTP_205_RESET_CONTENT)
+            else:
+                order.delete()
+                return Response({'message': 'Product removed from Cart'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
 
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
