@@ -1,5 +1,7 @@
+from django.db.models.base import Model
+from rest_framework import fields
 from rest_framework.serializers import ModelSerializer
-from seller_product.models import Comment, Product, Tag
+from seller_product.models import Comment, Product, Tag, OrderDetails
 
 class ProductSerializer(ModelSerializer):
     class Meta:
@@ -9,7 +11,13 @@ class ProductSerializer(ModelSerializer):
 class ProductsViewSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['product_id', 'name', 'price', 'picture', 'brand', 'description']
+        fields = ['id', 'name', 'price', 'picture', 'brand', 'description']
+
+class OrderViewSerializer(ModelSerializer):
+    product = ProductsViewSerializer()
+    class Meta:
+        model = OrderDetails
+        fields = ['product', 'quantity', 'price']
 
 class CommentSerializer(ModelSerializer):
     class Meta:
@@ -17,7 +25,6 @@ class CommentSerializer(ModelSerializer):
         fields = ['author', 'product', 'rating', 'content']
 
 class TagSerializer(ModelSerializer):
-
     class Meta:
         model = Tag
         fields = ['tag']
