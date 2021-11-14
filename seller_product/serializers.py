@@ -9,7 +9,7 @@ class ProductSerializer(ModelSerializer):
 class ProductsViewSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['product_id', 'name', 'price', 'picture', 'brand', 'description']
+        fields = ['product_id', 'name', 'price', 'picture', 'brand', 'description','tag_product']
 
 class CommentSerializer(ModelSerializer):
     class Meta:

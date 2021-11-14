@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from base.models import NewUser
-from seller_product.models import Product, Tag
+from seller_product.models import Comment, Product, Tag
 from rest_framework import filters
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 
@@ -76,7 +76,7 @@ class ProductView(APIView):
 class Comment_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request, format=None):
         try:
             data = request.data
@@ -91,10 +91,31 @@ class Comment_add_api(APIView):
             return Response(data = {'message': 'added comment'}, status=status.HTTP_201_CREATED)
         return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
 
+class Comment_view_api(APIView):
+    # to get comments for a particular product
+    def get(self, request, format=None):
+        data = request.data
+        comment = Comment.objects.filter(product=data['product'])
+        if comment.exists():
+            serializer = CommentSerializer(comment, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(data = {'message':'comments not found'}, status=status.HTTP_400_BAD_REQUEST)
+
 class Tag_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
     
+    # for getting tags of a particular product
+    def get(self, request, format=None):
+        data = request.data
+        tag = Tag.objects.filter(product=data['product'])
+        if tag.exists():
+            serializer = TagSerializer(tag, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(data = {'message':'product not found'}, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request, format=None):
         # getting product
         try:
@@ -113,7 +134,7 @@ class Tag_add_api(APIView):
             except:
                 t = Tag.objects.create(tag=request.data['tag'])
                 t.product.add(p)
-                return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
+                return Response(data = {'message': 'tag saved sucessfully'}, status=status.HTTP_201_CREATED)
         else:
             return Response(data = {'message': 'enter a tag'}, status=status.HTTP_400_BAD_REQUEST)
 

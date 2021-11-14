@@ -9,4 +9,5 @@ urlpatterns = [
     path('wishlist/', views.WishlistView.as_view()),
     path('cart/', views.CartView.as_view()),
     path('search-product/', views.SearchProduct.as_view()),
+    path('view-comment/', views.Comment_view_api.as_view()),
 ]
