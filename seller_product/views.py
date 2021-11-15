@@ -13,7 +13,7 @@ from seller_product.serializers import (
     ProductsViewSerializer,
 )
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 
 # is_seller check pending
 
@@ -260,9 +260,9 @@ class CartView(APIView):
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
-    # djangoFilterBackend not working
-    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    # djangoFilterBackend for categories/filters
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    # filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name','tag_product__tag','brand']
     ordering_fields = ['name','price','brand']
     # default ordering
