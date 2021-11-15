@@ -82,17 +82,6 @@ class AccountDetails(APIView):
             serializer.save()
         return Response(serializer.data)
     
-    # # disable an account
-    # def disable(self, request, format=None):
-    #     try:
-    #         user = NewUser.objects.get(email = request.user.email)
-    #         user.is_active = False
-    #         message = {'message':'User Disabled'}
-    #         return Response(message, status=status.HTTP_204_NO_CONTENT)
-    #     except:
-    #         message = {'message':'User not found'}
-    #         return Response(message, status=status.HTTP_404_NOT_FOUND)
-
     # delete an account
     def delete(self, request, format = None):
         email = request.user.email

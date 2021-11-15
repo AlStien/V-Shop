@@ -1,3 +1,4 @@
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -19,12 +20,27 @@ from seller_product.serializers import ProductSerializer, CommentSerializer, Tag
 class ProductsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format=None):
-        data = Product.objects.all()
-        serializer = ProductsViewSerializer(data, many = True)
-        return Response(serializer.data)
+        try:
+            data = Product.objects.all()
+            serializer = ProductsViewSerializer(data, many = True)
+            return Response(serializer.data)
+        except:
+            return Response({'message': 'No Products Found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ProductDetailsView(APIView):
+    permission_classes = [AllowAny,]
+    def get(self, request, format = None):
+        try:
+            product = Product.objects.get(request.data.get("id",))
+            serializer = ProductsViewSerializer(product, many=False)
+            return Response(serializer.data)
+        except:
+            return Response({'message': 'Product Not Found'}, status= status.HTTP_400_BAD_REQUEST)
+
     
 class ProductView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request, format=None):
         try:
             # overrding post request data with seller_id
@@ -56,7 +72,7 @@ class ProductView(APIView):
 
         if user.is_seller:
             product = Product.objects.get(id=data['id'])
-            serializer = ProductSerializer(product, data=request.data)
+            serializer = ProductSerializer(instance=product, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
