@@ -28,7 +28,7 @@ class Product(models.Model):
         return self.no_of_sales*self.price
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True, related_name='image_product')
     picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
 
     def __str__(self):
