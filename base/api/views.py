@@ -194,6 +194,7 @@ class PasswordChangeView(APIView):
                     message = {'message':'Password cannot be same as old one'}
                     return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
                 else:
+                    validate_password(password)
                     user.password = make_password(password)
                     user.save()
                     message = {'message':'Password Changed Successfully'}
