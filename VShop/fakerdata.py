@@ -1,8 +1,8 @@
 from faker import Faker
 from random import random
-from random import choice
+from random import choice, randint
 from base.models import NewUser
-from seller_product.models import Product, Comment, Tag
+from seller_product.models import Product, Comment, Tag, ProductImage
 
 fake = Faker()
 Faker.seed(313)
@@ -46,7 +46,8 @@ fake.add_provider(faker_commerce.Provider)
 for i in range(10):
 
     name = fake.ecommerce_name()
-    email = 'vshop.ecommerce.si@gmail.com'
+    query = NewUser.objects.filter(name__startswith="Seller")
+    email = query[randint(0,40)].email
     usr = NewUser.objects.get(email=email)
     # IMAGE FIELD
     price = int(random()*(10**4))
@@ -54,12 +55,22 @@ for i in range(10):
     description = fake.text()
     try:
         product_obj = Product.objects.create(name = name, seller_email =usr, price = price, brand = brand, description = description)
-        
+        print("product added")
+        # ADDING IMAGE
+        for j in range(2):
+            try:
+                pic = choice([i for i in range(1,11)])
+                product_img = ProductImage.objects.create(product=product_obj, picture='products/p'+str(pic)+'.jpg')
+                print("image added")    
+            except:
+                print("image not added")    
+
         # ADDING COMMENTS
         for j in range(2):
             try:
-                rating = choice(1,2,3,4,5)
+                rating = choice([1,2,3,4,5])
                 comment_obj = Comment.objects.create(product=product_obj, author=usr, content=fake.text(), rating=rating)
+                print("comment added")
             except:
                 print("comment not added")
         
@@ -79,3 +90,6 @@ for i in range(10):
 
     except:
         print("Product not added")
+
+
+
