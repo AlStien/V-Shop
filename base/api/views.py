@@ -194,6 +194,7 @@ class PasswordChangeView(APIView):
                     message = {'message':'Password cannot be same as old one'}
                     return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
                 else:
+                    validate_password(password)
                     user.password = make_password(password)
                     user.save()
                     message = {'message':'Password Changed Successfully'}
@@ -202,14 +203,17 @@ class PasswordChangeView(APIView):
             message = {'message':'Email entered does not match the verified Email.'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-class BecomeSellerView(APIView):
+class SellerListView(APIView):
 
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [AllowAny]
     def get(self, request, format = None):
         users = NewUser.objects.filter(is_seller = True)
         serializer = ProfileSerializer(users, many = True)
         return Response(serializer.data)
 
+class BecomeSellerView(APIView):
+
+    permission_classes = [IsAuthenticated,]
     def put(self, request, format=None):
         
         email = request.user.email

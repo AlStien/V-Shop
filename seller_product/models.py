@@ -33,7 +33,7 @@ class Product(models.Model):
 
 # class ProductImage(models.Model):
 #     product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
-#     picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png', null = True)
+#     picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png', null = True
 
 #     def picture(self):
 #         return self.picture
