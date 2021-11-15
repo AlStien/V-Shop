@@ -29,7 +29,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['vshopappdjango.herokuapp.com']
 
 
 # Application definition
@@ -83,13 +83,23 @@ WSGI_APPLICATION = 'VShop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'dc4dpue8uag96k',
+        'USER': 'imsyhkifvzlmsf',
+        'PASSWORD': str(os.getenv('DATABASE_PASSWORD')),
+        'HOST': 'ec2-34-224-239-147.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -138,6 +148,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
+# Activate Django-Heroku.
+django_heroku.settings(locals())
 
 STATIC_URL = '/static/'
 
@@ -160,8 +172,6 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS=True
 
 
-# Activate Django-Heroku.
-django_heroku.settings(locals())
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
