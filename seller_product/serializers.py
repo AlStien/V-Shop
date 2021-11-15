@@ -8,6 +8,9 @@ class ProductSerializer(ModelSerializer):
         model = Product
         fields = ['seller_email', 'name', 'price','brand', 'description']
 
+    def create(self, validated_data):
+        return Product.objects.create(**validated_data)
+
 class ProductsViewSerializer(ModelSerializer):
     class Meta:
         model = Product

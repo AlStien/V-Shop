@@ -4,13 +4,21 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from base.models import NewUser
-from seller_product.models import Comment, Product, Tag, Cart, OrderDetails
+from seller_product.models import (
+            Comment, 
+            Product, 
+            Tag, 
+            Cart, 
+            OrderDetails,
+            ProductImage,
+)
 from rest_framework import filters
 from seller_product.serializers import (
     ProductSerializer, 
     CommentSerializer, 
     OrderViewSerializer,
     ProductsViewSerializer,
+    # ProductImageSerializer,
 )
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 from django_filters.rest_framework import DjangoFilterBackend
@@ -51,10 +59,9 @@ class ProductView(APIView):
         except:
             return Response(data = {'message':'user not found'},status=status.HTTP_401_UNAUTHORIZED)
         if user.is_seller:
-            serializer = ProductSerializer(data = data)
-
-            if serializer.is_valid():
-                serializer.save()
+            serializer_product = ProductSerializer(data = data)
+            if serializer_product.is_valid():
+                serializer_product.save()
                 return Response(data = {'message': 'product saved sucessfully'}, status=status.HTTP_201_CREATED)
             return Response(data = {'message': 'Invalid data entered'},status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -96,6 +103,15 @@ class ProductView(APIView):
             return Response(data={'message':'Product deleted'},status=status.HTTP_204_NO_CONTENT)
         except:
             return Response(data={'message':'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+class ProductImageView(APIView):
+    def post(self, request, format=None):
+        images = request.data.getlist('images')
+        product = Product.objects.get(seller_email = request.user.id, price = request.data.get("price",), 
+                                        name=request.data.get("name",))
+        for i in images:
+            ProductImage.objects.create(product = product, picture = i)
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 class Comment_add_api(APIView):
 
