@@ -10,6 +10,7 @@ from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, Pr
 from VShop.settings import EMAIL_HOST_USER
 import random, datetime
 from base.models import NewUser
+from django.contrib.auth.password_validation import validate_password
 
 # send otp to required email
 def send_otp(email):
@@ -60,6 +61,9 @@ class AccountList(APIView):
             return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
         else:
+            # for validation of password (default and custom)
+            # validate_password throws exception for valdation errors
+            validate_password(request.data.get('password',))
             if serializer.is_valid():
                 send_otp(user_email)
                 serializer.save()
