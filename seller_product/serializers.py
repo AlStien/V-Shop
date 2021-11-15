@@ -6,12 +6,12 @@ from seller_product.models import Comment, Product, Tag, OrderDetails
 class ProductSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['seller_email', 'name', 'price', 'picture','brand', 'description']
+        fields = ['seller_email', 'name', 'price','brand', 'description']
 
 class ProductsViewSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'picture', 'brand', 'description']
+        fields = ['id', 'name', 'price', 'brand', 'description']
 
 class OrderViewSerializer(ModelSerializer):
     product = ProductsViewSerializer()

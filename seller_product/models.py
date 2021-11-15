@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+
+from django.db.models.deletion import CASCADE
 from base.models import NewUser
 from django.core.validators import MaxLengthValidator
 
@@ -9,7 +11,6 @@ class Product(models.Model):
     seller_email = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="seller_email")
     name = models.CharField(max_length=100)
     price = models.IntegerField()
-    picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
     brand = models.CharField(max_length=50)
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0)
@@ -25,6 +26,13 @@ class Product(models.Model):
 
     def total_income(self):
         return self.no_of_sales*self.price
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
+    picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
+
+    def __str__(self):
+        return self.picture
 
 class Cart(models.Model):
     cart_user = models.OneToOneField(NewUser, related_name='user', on_delete=models.CASCADE)

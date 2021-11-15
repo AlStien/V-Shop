@@ -54,7 +54,7 @@ class AccountList(APIView):
     # create a new account
     def post(self, request, format = None):
         serializer = AccountSerializer(data=request.data)
-        user_email = request.data.get("email",)
+        user_email = request.data.get("email",).lower()
         # checking if user already exists
         if NewUser.objects.filter(email = user_email).exists():
             message = {'message':'User already exists. Please Log-In'}
@@ -102,7 +102,7 @@ class OTPView(APIView):
 
     def post(self, request, format = None):
         data_otp = request.data.get("otp",)
-        data_email = request.data.get("email",)
+        data_email = request.data.get("email",).lower()
         user = OTP.objects.get(otpEmail = data_email)
         current_time = timezone.now()
         print(current_time)
@@ -137,7 +137,7 @@ class LoginAPIView(APIView):
     serializer_class = LoginUserSerializer
 
     def post(self, request):
-        email = request.data.get("email",)
+        email = (request.data.get("email",)).lower()
         password = request.data.get("password",)
         try:
             entered_usr = NewUser.objects.get(email__iexact=email)
@@ -161,7 +161,7 @@ class EmailVerifyView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, format = None):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         if NewUser.objects.filter(email = email).exists():
             user = NewUser.objects.get(email = email)
             seraializer = CheckVerify(user)
@@ -172,7 +172,7 @@ class EmailVerifyView(APIView):
             
 
     def post(self, request):
-        email = request.data.get("email",)
+        email = request.data.get("email",).lower()
         if NewUser.objects.filter(email = email).exists():
             send_otp(email)
             message = {'message':'OTP sent to registered Email'}
@@ -185,7 +185,7 @@ class PasswordChangeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        email = request.data.get("email",)
+        email = request.data.get("email",).lower()
         password = request.data.get("new password")
         if OTP.objects.filter(otpEmail = email).exists():
             if NewUser.objects.filter(email = email).exists():
