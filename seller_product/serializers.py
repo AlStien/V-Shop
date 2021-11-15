@@ -3,6 +3,7 @@ from rest_framework import fields
 from rest_framework.serializers import ModelSerializer
 from seller_product.models import Comment, Product, Tag, OrderDetails
 
+
 class ProductSerializer(ModelSerializer):
     class Meta:
         model = Product
@@ -14,7 +15,24 @@ class ProductSerializer(ModelSerializer):
 class ProductsViewSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'brand', 'description']
+        fields = ['id', 'name', 'price', 'brand', 'description', 'picture1', 'picture2', 'picture3', 'picture4']
+
+    # def to_representation(self, instance):
+    #     # print("yayy")
+    #     print("yayy")
+    #     data = super(ProductsViewSerializer, self).to_representation(instance)
+    #     product = Product.objects.get(id = instance['id'])
+    #     product_images = ProductImage.objects.filter(product = product)
+    #     data['product_images'] = product_images
+    #     return data
+
+# class ProductImageSerializer(ModelSerializer):
+#     product = ProductsViewSerializer()
+#     # picture = ProductImage.picture
+#     class Meta:
+#         model = ProductImage
+#         fields = ['product', 'picture']
+#         depth = 5
 
 class OrderViewSerializer(ModelSerializer):
     product = ProductsViewSerializer()
