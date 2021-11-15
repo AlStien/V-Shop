@@ -10,7 +10,8 @@ from seller_product.models import (
             Tag, 
             Cart, 
             OrderDetails,
-            ProductImage,
+            # ProductImage,
+            Orders
 )
 from rest_framework import filters
 from seller_product.serializers import (
@@ -39,7 +40,7 @@ class ProductDetailsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format = None):
         try:
-            product = Product.objects.get(request.data.get("id",))
+            product = Product.objects.get(id =request.data.get("id",))
             serializer = ProductsViewSerializer(product, many=False)
             return Response(serializer.data)
         except:
@@ -104,14 +105,21 @@ class ProductView(APIView):
         except:
             return Response(data={'message':'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-class ProductImageView(APIView):
-    def post(self, request, format=None):
-        images = request.data.getlist('images')
-        product = Product.objects.get(seller_email = request.user.id, price = request.data.get("price",), 
-                                        name=request.data.get("name",))
-        for i in images:
-            ProductImage.objects.create(product = product, picture = i)
-        return Response(status=status.HTTP_202_ACCEPTED)
+# class ProductImageView(APIView):
+#     def post(self, request, format=None):
+#         images = request.data.getlist('images')
+#         product = Product.objects.get(seller_email = request.user.id, price = request.data.get("price",), 
+#                                         name=request.data.get("name",))
+#         for i in images:
+#             ProductImage.objects.create(product = product, picture = i)
+#         return Response(status=status.HTTP_202_ACCEPTED)
+
+class SellerProductsView(APIView):
+    def get(self, request, format = None):
+        products = Product.objects.filter(seller_email = request.user.id)
+        serializer = ProductsViewSerializer(products, many = True)
+        return Response(serializer.data)
+
 
 class Comment_add_api(APIView):
 
@@ -272,6 +280,27 @@ class CartView(APIView):
                 return Response({'message': 'Product removed from Cart'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
+
+class OrderView(APIView):
+    def get(self, request, format=None):
+        user = request.user
+        if Orders.objects.filter(user = user).exists():
+            order = Orders.objects.get(user = user)
+        else:
+            order = Orders.objects.create(user = user)
+        order_details = OrderDetails.objects.filter(orders = order)
+        serializer = OrderViewSerializer(order_details, many = True)
+        return Response(serializer.data)
+
+    def put(self, request, format = None):
+        user = request.user
+        order = Orders.objects.create(user = user)
+        cart = Cart.objects.get(cart_user = user)
+        order_details = OrderDetails.objects.filter(cart_user = cart)
+        order_details.orders = order
+        order_details.cart_user = None
+        order_details.save()
+        return Response({'message': 'Successfully Ordered'}, status= status.HTTP_202_ACCEPTED)
 
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
