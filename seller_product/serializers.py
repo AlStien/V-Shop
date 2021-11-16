@@ -8,7 +8,7 @@ from base.api.serializers import AuthorIDSerializer
 class ProductSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['seller_email', 'name', 'price','brand', 'description','image_product','comment_product','tag_product']
+        fields = ['seller_email', 'name', 'price','brand', 'description','picture1','picture2', 'picture3', 'picture4','comment_product','tag_product']
 
     # def to_representation(self, instance):
     #     data = super(Auth).to_representation(instance)
