@@ -33,3 +33,8 @@ class ProfileSerializer(ModelSerializer):
     class Meta:
         model = NewUser
         fields = ['email', 'name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'is_seller']
+
+class AuthorIDSerializer(ModelSerializer):
+    class Meta:
+        model = NewUser
+        fields = ['id','name']
