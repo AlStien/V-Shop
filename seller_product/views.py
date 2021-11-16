@@ -323,8 +323,8 @@ class OrderView(APIView):
     def put(self, request, format = None):
         user = request.user
         try:
-            order = Orders.objects.get(user=user)
-            order.delete()
+            # order = Orders.objects.get(user=user)
+            # order.delete()
             order = Orders.objects.create(user = user)
         except:
             order = Orders.objects.create(user = user)
