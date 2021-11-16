@@ -5,17 +5,6 @@ from base.models import NewUser
 from seller_product.models import Comment, Product, Tag, OrderDetails
 from base.api.serializers import AuthorIDSerializer
 
-class ProductSerializer(ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['seller_email', 'name', 'price','brand', 'description','picture1','picture2', 'picture3', 'picture4','comment_product','tag_product']
-
-    # def to_representation(self, instance):
-    #     data = super(Auth).to_representation(instance)
-    #     return super().to_representation(instance)
-
-    def create(self, validated_data):
-        return Product.objects.create(**validated_data)
 
 class TagSerializer(ModelSerializer):
     class Meta:
@@ -38,6 +27,19 @@ class CommentSerializerForProductView(ModelSerializer):
     #     data['author'] = name
     #     return data 
     
+class ProductSerializer(ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ['seller_email', 'name', 'price','brand', 'description','picture1','picture2', 'picture3', 'picture4']
+
+    # def to_representation(self, instance):
+    #     data = super(Auth).to_representation(instance)
+    #     return super().to_representation(instance)
+
+    def create(self, validated_data):
+        return Product.objects.create(**validated_data)
+
 class ProductsViewSerializer(ModelSerializer):
 
     tag_product = TagSerializer(many=True)
