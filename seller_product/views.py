@@ -120,10 +120,15 @@ class ProductView(APIView):
 #         return Response(status=status.HTTP_202_ACCEPTED)
 
 class SellerProductsView(APIView):
+    permission_classes = [IsAuthenticated,]
     def get(self, request, format = None):
-        products = Product.objects.filter(seller_email = request.user.id)
-        serializer = ProductsViewSerializer(products, many = True)
-        return Response(serializer.data)
+        user = request.user
+        if user.is_seller:
+            products = Product.objects.filter(seller_email = request.user.id)
+            serializer = ProductsViewSerializer(products, many = True)
+            return Response(serializer.data)
+        else:
+            return Response({'message': 'User Not a Seller'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class Comment_add_api(APIView):

@@ -19,4 +19,5 @@ urlpatterns = [
     path('order/checkout/', views.OrderView.as_view()),
     path('search-product/', views.SearchProduct.as_view()),
     path('view-comment/', views.Comment_view_api.as_view()),
+    path('seller-dashboard/', views.SellerProductsView.as_view()),
 ]
