@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 
 from django.db.models.deletion import CASCADE
+from rest_framework.fields import DateTimeField, TimeField
 from base.models import NewUser
 from django.core.validators import MaxLengthValidator
 
@@ -15,9 +16,9 @@ class Product(models.Model):
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0)
     picture1 = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
-    picture2 = models.ImageField(upload_to = 'products' , null = True)
-    picture3 = models.ImageField(upload_to = 'products' , null = True)
-    picture4 = models.ImageField(upload_to = 'products' , null = True)
+    picture2 = models.ImageField(upload_to = 'products' , null = True, blank = True)
+    picture3 = models.ImageField(upload_to = 'products' , null = True, blank = True)
+    picture4 = models.ImageField(upload_to = 'products' , null = True, blank = True)
 
     wishlist_user = models.ManyToManyField(NewUser, related_name='wishlist', blank=True)
     # cart = models.ManyToManyField(Cart, related_name='cart')
@@ -50,7 +51,7 @@ class Orders(models.Model):
     amount = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
-        return self.product.name
+        return self.user.name
 
 class OrderDetails(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='prodcut')
@@ -58,6 +59,7 @@ class OrderDetails(models.Model):
     orders = models.ForeignKey(Orders, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
     quantity = models.IntegerField()
     price = models.IntegerField()
+    updated = models.DateTimeField(auto_now = True)
     is_paid = models.BooleanField(default=False)
 
     def __str__(self):
