@@ -17,6 +17,6 @@ urlpatterns = [
     path('login/', views.LoginAPIView.as_view(), name="login"),
     path('email-verify/', views.EmailVerifyView.as_view(), name="email-verify"),
     path('reset-password/change-password/', views.PasswordChangeView.as_view(), name='change-password'),
-    path('sellers', views.SellerListView.as_view(), name="sellers"),
+    path('sellers/', views.SellerListView.as_view(), name="sellers"),
     path('become-seller/', views.BecomeSellerView.as_view(), name="become-seller"),
 ]
