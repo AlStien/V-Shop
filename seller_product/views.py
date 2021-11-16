@@ -30,7 +30,12 @@ class ProductsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format=None):
         try:
-            data = Product.objects.all()
+            if NewUser.objects.filter(id = request.user.id).exists():
+                user = NewUser.objects.get(id = request.user.id)
+                if user.is_seller:
+                    data = Product.objects.exclude(seller_email = user.id)
+            else:
+                data = Product.objects.all()
             serializer = ProductsViewSerializer(data, many = True)
             return Response(serializer.data)
         except:
@@ -231,8 +236,23 @@ class WishlistView(APIView):
     def put(self, request, format=None):
         user = NewUser.objects.get(email = request.user.email)
         product = Product.objects.get(id = request.data.get("id",))
+        if product.seller_email == request.user:
+            return Response({'message': 'Seller Cannot Wishlist their own Product'}, status = status.HTTP_400_BAD_REQUEST)
+        if NewUser.objects.filter(wishlist = product).exists():
+            return Response({'message': 'Product Already in Wishlist'}, status=status.HTTP_208_ALREADY_REPORTED)
         product.wishlist_user.add(user)
         return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, format = None):
+        user = NewUser.objects.get(email = request.user.email)
+        product = Product.objects.get(id = request.data.get("id",))
+        # user = NewUser.objects.filter(wishlist = product)
+        print(user)
+        if NewUser.objects.filter(wishlist = product).exists():
+            product.wishlist_user.remove(user)
+            return Response(data = {'message': 'removed product from to wishlist'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'message': 'Product Not in Wishlist'}, status = status.HTTP_404_NOT_FOUND)
 
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -255,6 +275,8 @@ class CartView(APIView):
             user_cart = Cart.objects.get(cart_user = user)
         else:
             user_cart = Cart.objects.create(cart_user = user)
+        if product.seller_email == user.id:
+            return Response({'message': 'Seller Cannot Wishlist their own Product'}, status = status.HTTP_400_BAD_REQUEST)
         if OrderDetails.objects.filter(product=product, cart_user = user_cart).exists():
             order = OrderDetails.objects.get(product=product, cart_user = user_cart)
             order.quantity = order.quantity + quantity
@@ -272,6 +294,7 @@ class CartView(APIView):
         try:
             order = OrderDetails.objects.get(product=product, cart_user = user_cart)
             order.quantity = order.quantity - 1
+            order.price = order.price - product.price
             if order.quantity > 0:
                 order.save()
                 return Response({'message': 'removed 1 item from Cart'}, status=status.HTTP_205_RESET_CONTENT)
@@ -283,25 +306,32 @@ class CartView(APIView):
 
 class OrderView(APIView):
     def get(self, request, format=None):
-        user = request.user
+        user = NewUser.objects.get(id = request.user.id)
         if Orders.objects.filter(user = user).exists():
             order = Orders.objects.get(user = user)
         else:
             order = Orders.objects.create(user = user)
-        order_details = OrderDetails.objects.filter(orders = order)
-        serializer = OrderViewSerializer(order_details, many = True)
+        products = OrderDetails.objects.filter(orders = order)
+        serializer = OrderViewSerializer(products, many = True)
         return Response(serializer.data)
 
     def put(self, request, format = None):
         user = request.user
-        order = Orders.objects.create(user = user)
+        try:
+            order = Orders.objects.get(user=user)
+            order.delete()
+            order = Orders.objects.create(user = user)
+        except:
+            order = Orders.objects.create(user = user)
         cart = Cart.objects.get(cart_user = user)
-        order_details = OrderDetails.objects.filter(cart_user = cart)
-        order_details.orders = order
-        order_details.cart_user = None
-        order_details.save()
-        return Response({'message': 'Successfully Ordered'}, status= status.HTTP_202_ACCEPTED)
-
+        if cart is not None:
+            order_details = OrderDetails.objects.filter(cart_user = cart)
+            for o in order_details:
+                o.orders = order
+                o.cart_user = None
+                o.save()
+            return Response({'message': 'Successfully Ordered'}, status= status.HTTP_202_ACCEPTED)
+        return Response({},status = status.HTTP_403_FORBIDDEN)
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
