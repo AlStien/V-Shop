@@ -9,8 +9,6 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import cloudinary
-import cloudinary_storage
 import django_heroku
 from pathlib import Path
 from dotenv import load_dotenv
@@ -47,9 +45,7 @@ INSTALLED_APPS = [
     'base',
     'rest_framework',
     'corsheaders',
-    'django_filters',
-    'cloudinary',
-    'cloudinary_storage',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -221,11 +217,3 @@ SIMPLE_JWT = {
 
 ALLOWED_HOSTS=['*']
 CORS_ORIGIN_ALLOW_ALL = True
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': str(os.getenv('CLOUD_NAME')),
-    'API_KEY': str(os.getenv('API_KEY')),
-    'API_SECRET':str(os.getenv('API_SECRET')),
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
