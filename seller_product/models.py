@@ -99,3 +99,9 @@ class Tag(models.Model):
     
     def __str__(self):
         return self.tag
+
+class Transaction(models.Model):
+    user = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="transaction_user")
+    transaction_id = models.CharField(max_length=50)
+    amount = models.IntegerField()
+    payment_method = models.CharField(max_length=20)

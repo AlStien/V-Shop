@@ -11,7 +11,8 @@ from seller_product.models import (
             Cart, 
             OrderDetails,
             # ProductImage,
-            Orders
+            Orders,
+            Transaction
 )
 from rest_framework import filters
 from seller_product.serializers import (
@@ -23,7 +24,7 @@ from seller_product.serializers import (
 )
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-
+from django.utils import timezone
 # is_seller check pending
 
 class ProductsView(APIView):
@@ -386,3 +387,40 @@ class SearchFilterProduct(APIView):
             return Response(serializer.data)
         except:
             return Response({'message':'errrrrrr'})
+
+# REDIRECT FROM CART
+
+def txn_id_generator(id,amount):
+    t = str(timezone.now())
+    t = t.replace(' ','').replace('-','').replace(':','').replace('.','').replace('+','')
+    t = str(id)+'U'+ t +'A'+ str(amount)
+    # example 2U202111181756094092860000A5675
+    return t
+
+class CheckoutTransaction(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        data = request.data
+        entered_amount = data.get('amount')
+        payment_method = data.get('payment_method')
+        txn_id = txn_id_generator(request.user.id,entered_amount)
+        try:
+            cart_amount = Cart.objects.get(cart_user = request.user).amount
+            if cart_amount==entered_amount:
+                print('matched')
+                try:
+                    Transaction.objects.create(user=request.user, transaction_id=str(txn_id), amount=int(entered_amount), payment_method=payment_method)
+                    return Response({'message':'Transaction Successful',
+                                    'txn_id':txn_id,
+                                    'user':request.user.name,
+                                    'amount_paid':entered_amount,
+                                    'payment_method':payment_method}, status=status.HTTP_201_CREATED)
+                except:
+                    return Response({'message':'Invalid data entered'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'Enter correct amount'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+# NOW REDIRECT TO ORDER CHECKOUT is_paid check ???
