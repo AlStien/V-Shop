@@ -45,7 +45,7 @@ class ProductDetailsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format = None):
         try:
-            product = Product.objects.get(id =request.data.get("id",))
+            product = Product.objects.get(id = int(request.data.get("id",)))
             serializer = ProductsViewSerializer(product, many=False)
             return Response(serializer.data)
         except:
@@ -285,6 +285,7 @@ class CartView(APIView):
         if OrderDetails.objects.filter(product=product, cart_user = user_cart).exists():
             order = OrderDetails.objects.get(product=product, cart_user = user_cart)
             order.quantity = order.quantity + quantity
+            order.price = order.price + (quantity * product.price)
             order.save()
         else:
             OrderDetails.objects.create(product = product, cart_user = user_cart, 
@@ -309,6 +310,19 @@ class CartView(APIView):
         except:
             return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
 
+class CartDeleteView(APIView):
+
+    def delete(self, request, format = None):
+        product = Product.objects.get(id = request.data.get("id",))
+        user = NewUser.objects.get(id = request.user.id)
+        user_cart = Cart.objects.get(cart_user = user)
+        try:
+            order = OrderDetails.objects.get(product=product, cart_user = user_cart)
+            order.delete()
+            return Response({'message': 'Product removed from Cart'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
+
 class OrderView(APIView):
     def get(self, request, format=None):
         user = NewUser.objects.get(id = request.user.id)
@@ -323,8 +337,8 @@ class OrderView(APIView):
     def put(self, request, format = None):
         user = request.user
         try:
-            # order = Orders.objects.get(user=user)
-            # order.delete()
+            order = Orders.objects.get(user=user)
+            order.delete()
             order = Orders.objects.create(user = user)
         except:
             order = Orders.objects.create(user = user)
