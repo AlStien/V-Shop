@@ -350,12 +350,25 @@ class SearchProduct(generics.ListAPIView):
 
 class SearchFilterProduct(APIView):
     def get(self, request, format=None):
-        filter = request.data.get('category')
+        data = request.data
+        if 'category_tag' in data:
+            filter = data.get('category_tag')
+            # for tag filtering
+            try:
+                filtered_products = Product.objects.filter(tag_product__tag__iexact = filter)
+                serializer = ProductsViewSerializer(filtered_products, many = True)
+                if serializer.data == []:
+                    return Response({'message':'Not matching products with given tag found'})
+                return Response(serializer.data)
+            except:
+                return Response({'message':'errrrrrr'})
+        # for brand filtering
+        filter = request.data.get('category_brand')
         try:
-            filtered_products = Product.objects.filter(tag_product__tag__iexact = filter)
+            filtered_products = Product.objects.filter(brand__iexact = filter)
             serializer = ProductsViewSerializer(filtered_products, many = True)
             if serializer.data == []:
-                return Response({'message':'Not matching products found'})
+                return Response({'message':'Not matching products with given brand found'})
             return Response(serializer.data)
         except:
             return Response({'message':'errrrrrr'})
