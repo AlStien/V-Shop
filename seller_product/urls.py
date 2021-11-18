@@ -18,6 +18,7 @@ urlpatterns = [
     path('cart/delete-product/', views.CartDeleteView.as_view()),
     path('order/', views.OrderView.as_view()),
     path('order/checkout/', views.OrderView.as_view()),
+    path('checkout-transaction/', views.CheckoutTransaction.as_view()),
     path('search-product/', views.SearchProduct.as_view()),
     path('search-filter-product/', views.SearchFilterProduct.as_view()),
     path('view-comment/', views.Comment_view_api.as_view()),
