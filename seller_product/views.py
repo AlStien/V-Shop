@@ -361,3 +361,15 @@ class SearchProduct(generics.ListAPIView):
     ordering_fields = ['name','price','brand']
     # default ordering
     ordering = ['price']
+
+class SearchFilterProduct(APIView):
+    def get(self, request, format=None):
+        filter = request.data.get('category')
+        try:
+            filtered_products = Product.objects.filter(tag_product__tag__iexact = filter)
+            serializer = ProductsViewSerializer(filtered_products, many = True)
+            if serializer.data == []:
+                return Response({'message':'Not matching products found'})
+            return Response(serializer.data)
+        except:
+            return Response({'message':'errrrrrr'})
