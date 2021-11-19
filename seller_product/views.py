@@ -404,7 +404,7 @@ class CheckoutTransaction(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         entered_amount = data.get('amount')
         payment_method = data.get('payment_method')
