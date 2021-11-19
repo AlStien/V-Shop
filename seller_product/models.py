@@ -86,7 +86,7 @@ class Comment(models.Model):
     author = models.ForeignKey(NewUser,on_delete=models.CASCADE, related_name="author")
     # rating from 1 to 5 fromt end validation req
     # rating = models.IntegerField(default=1,validators=[MaxLengthValidator(1)])
-    rating = models.CharField(max_length=1, choices=rating_choices, default=1)
+    rating = models.IntegerField(choices=rating_choices, default=1)
     content = models.CharField(max_length=300)
 
     def __str__(self):
