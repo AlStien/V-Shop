@@ -416,36 +416,36 @@ class CheckoutTransaction(APIView):
         # except:
         #     coupon_msg = 'Enter valid coupon code'
         
+        # try:
+            # cart_amount = Cart.objects.get(cart_user = request.user).amount
+            # if cart_amount==entered_amount:
+            #     print('matched')
         try:
-            cart_amount = Cart.objects.get(cart_user = request.user).amount
-            if cart_amount==entered_amount:
-                print('matched')
-                try:
-                    Transaction.objects.create(user=request.user, transaction_id=str(txn_id), amount=int(entered_amount), payment_method=payment_method)
-                    try:
-                        coupon_code = data.get('code')
-                        coupon = Coupon.objects.get(code=coupon_code)
-                        time_now = timezone.now()
-                        if coupon.expiry> time_now:
-                            coupon.used+=1
-                            coupon.save()
-                            amount_paid = entered_amount*0.95
-                            coupon_msg = 'coupon applied 5% discount'
-                        else:
-                            coupon_msg = 'coupon expired'
-                    except:
-                        coupon_msg = 'Enter valid coupon code'
-                    return Response({'message':'Transaction Successful',
-                                    'txn_id':txn_id,
-                                    'user':request.user.name,
-                                    'amount_paid':amount_paid,
-                                    'payment_method':payment_method,
-                                    'coupon_msg':coupon_msg}, status=status.HTTP_201_CREATED)
-                except:
-                    return Response({'message':'Invalid data entered'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'message':'Enter correct amount'}, status=status.HTTP_400_BAD_REQUEST)
+            Transaction.objects.create(user=request.user, transaction_id=str(txn_id), amount=int(entered_amount), payment_method=payment_method)
+            try:
+                coupon_code = data.get('code')
+                coupon = Coupon.objects.get(code=coupon_code)
+                time_now = timezone.now()
+                if coupon.expiry> time_now:
+                    coupon.used+=1
+                    coupon.save()
+                    amount_paid = entered_amount*0.95
+                    coupon_msg = 'coupon applied 5% discount'
+                else:
+                    coupon_msg = 'coupon expired'
+            except:
+                coupon_msg = 'Enter valid coupon code'
+            return Response({'message':'Transaction Successful',
+                            'txn_id':txn_id,
+                            'user':request.user.name,
+                            'amount_paid':amount_paid,
+                            'payment_method':payment_method,
+                            'coupon_msg':coupon_msg}, status=status.HTTP_201_CREATED)
         except:
-            return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'message':'Invalid data entered'}, status=status.HTTP_400_BAD_REQUEST)
+            # return Response({'message':'Enter correct amount'}, status=status.HTTP_400_BAD_REQUEST)
+        # except:
+            # return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 def send_coupon():
     # generating coupon code
