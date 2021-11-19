@@ -21,6 +21,7 @@ from seller_product.serializers import (
     CommentSerializer, 
     OrderViewSerializer,
     ProductsViewSerializer,
+    # OrderGetSerializer
     # ProductImageSerializer,
 )
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
@@ -329,23 +330,48 @@ class CartDeleteView(APIView):
 
 class OrderView(APIView):
     def get(self, request, format=None):
-        user = NewUser.objects.get(id = request.user.id)
+        user = request.user
         if Orders.objects.filter(user = user).exists():
-            order = Orders.objects.get(user = user)
+            print("exist")
+            order = Orders.objects.filter(user = user)
         else:
+            print("created")
             order = Orders.objects.create(user = user)
-        products = OrderDetails.objects.filter(orders = order)
+        # print(f"{order} LOL")
+        order_last = Orders.objects.create(user = user, amount = 100)
+        print(f"{order_last} afk")
+        for o in order:
+            # print(f"{order_last} afk")
+            details = OrderDetails.objects.filter(orders = o)
+            for detail in details:
+                # print(f"{order_last} afk")
+                print(detail)
+                detail.orders = Orders.objects.filter(user = user).last()
+                print(detail.orders.amount)
+                detail.save()
+            # order_details = OrderDetails.objects.filter(cart_user = cart)
+            # for o in order_details:
+            #     o.orders = order
+            #     o.cart_user = None
+            #     o.save()
+
+        print("gg")
+        print(order_last)
+        order = Orders.objects.filter(user = user)
+        order[0].delete()
+        products = OrderDetails.objects.filter(orders = order_last)
+        print(products)
         serializer = OrderViewSerializer(products, many = True)
         return Response(serializer.data)
 
     def put(self, request, format = None):
         user = request.user
-        try:
-            order = Orders.objects.get(user=user)
-            order.delete()
-            order = Orders.objects.create(user = user)
-        except:
-            order = Orders.objects.create(user = user)
+        # try:
+        #     order = Orders.objects.get(user=user)
+        #     order.delete()
+        #     order = Orders.objects.create(user = user)
+        # except:
+        order = Orders.objects.create(user = user)
         cart = Cart.objects.get(cart_user = user)
         if cart is not None:
             order_details = OrderDetails.objects.filter(cart_user = cart)
