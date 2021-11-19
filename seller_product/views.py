@@ -461,7 +461,18 @@ def send_coupon():
         return code
     
     code = generate_code()
-    Coupon.objects.create(code = code)
+
+    # to check if randomly generated coupon code exists in database
+    c = Coupon.objects.filter(code = code)
+    while c.count() != 0:
+        print("code exists")
+        code = generate_code()
+        c = Coupon.objects.filter(code = code)
+
+    try:
+        Coupon.objects.create(code = code)
+    except:
+        print("error processing coupon code")
 
     from_email, to = EMAIL_HOST_USER, [NewUser.objects.filter(is_seller=False)[i].email for i in range(NewUser.objects.filter(is_seller=False).count())]
     subject = "coupon for V-Shop"
@@ -474,10 +485,12 @@ def send_coupon():
     return to
 
 class SendCoupon(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
-        # email = request.data.get('email')
-        # for i in range(NewUser.objects.all().count()):
-        #     send_coupon(NewUser.objects.all()[i].email)
-        recepients_list = send_coupon()
-        return Response({'message':'Sent coupon mail to following users','recepients_list':recepients_list})
+        if request.user.is_staff:
+            recepients_list = send_coupon()
+            return Response({'message':'Sent coupon mail to following users','recepients_list':recepients_list})
+        else:
+            return Response({'message':'Only staff members can send coupons'})
 # NOW REDIRECT TO ORDER CHECKOUT is_paid check ???
