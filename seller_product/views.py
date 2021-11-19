@@ -13,7 +13,7 @@ from seller_product.models import (
             # ProductImage,
             Orders,
             Transaction,
-            Cupon
+            Coupon
 )
 from rest_framework import filters
 from seller_product.serializers import (
@@ -411,10 +411,10 @@ class CheckoutTransaction(APIView):
         txn_id = txn_id_generator(request.user.id,entered_amount)
         amount_paid = entered_amount
         # try:
-        #     cupon_code = data.get('code')
-        #     cupon = Cupon.objects.get(code=cupon_code)
+        #     coupon_code = data.get('code')
+        #     coupon = coupon.objects.get(code=coupon_code)
         # except:
-        #     cupon_msg = 'Enter valid cupon code'
+        #     coupon_msg = 'Enter valid coupon code'
         
         try:
             cart_amount = Cart.objects.get(cart_user = request.user).amount
@@ -423,32 +423,32 @@ class CheckoutTransaction(APIView):
                 try:
                     Transaction.objects.create(user=request.user, transaction_id=str(txn_id), amount=int(entered_amount), payment_method=payment_method)
                     try:
-                        cupon_code = data.get('code')
-                        cupon = Cupon.objects.get(code=cupon_code)
+                        coupon_code = data.get('code')
+                        coupon = Coupon.objects.get(code=coupon_code)
                         time_now = timezone.now()
-                        if cupon.expiry> time_now:
-                            cupon.used+=1
-                            cupon.save()
+                        if coupon.expiry> time_now:
+                            coupon.used+=1
+                            coupon.save()
                             amount_paid = entered_amount*0.95
-                            cupon_msg = 'Cupon applied 5% discount'
+                            coupon_msg = 'coupon applied 5% discount'
                         else:
-                            cupon_msg = 'Cupon expired'
+                            coupon_msg = 'coupon expired'
                     except:
-                        cupon_msg = 'Enter valid cupon code'
+                        coupon_msg = 'Enter valid coupon code'
                     return Response({'message':'Transaction Successful',
                                     'txn_id':txn_id,
                                     'user':request.user.name,
                                     'amount_paid':amount_paid,
                                     'payment_method':payment_method,
-                                    'cupon_msg':cupon_msg}, status=status.HTTP_201_CREATED)
+                                    'coupon_msg':coupon_msg}, status=status.HTTP_201_CREATED)
                 except:
                     return Response({'message':'Invalid data entered'}, status=status.HTTP_400_BAD_REQUEST)
             return Response({'message':'Enter correct amount'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-def send_cupon():
-    # generating cupon code
+def send_coupon():
+    # generating coupon code
     def generate_code():
         code = ''
         type = '01'
@@ -461,23 +461,23 @@ def send_cupon():
         return code
     
     code = generate_code()
-    Cupon.objects.create(code = code)
+    Coupon.objects.create(code = code)
 
     from_email, to = EMAIL_HOST_USER, [NewUser.objects.filter(is_seller=False)[i].email for i in range(NewUser.objects.filter(is_seller=False).count())]
-    subject = "CUPON for V-Shop"
-    text_content = f'Cupon{code}.\nValid for only 7 days.'
-    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px;"><p style="font-size: 18px;">GREETINGS FROM VSHOP</p><p>Your cupon code for 5% dicount on V-Shop is <strong style="font-size: 18px;">{code}</strong>.</p><p>Valid for only 7 days</p></span>'
+    subject = "coupon for V-Shop"
+    text_content = f'coupon{code}.\nValid for only 7 days.'
+    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px;"><p style="font-size: 18px;">GREETINGS FROM VSHOP</p><p>Your coupon code for 5% dicount on V-Shop is <strong style="font-size: 18px;">{code}</strong>.</p><p>Valid for only 7 days</p></span>'
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
     return to
 
-class SendCupon(APIView):
+class SendCoupon(APIView):
     def get(self, request, format=None):
         # email = request.data.get('email')
         # for i in range(NewUser.objects.all().count()):
-        #     send_cupon(NewUser.objects.all()[i].email)
-        recepients_list = send_cupon()
-        return Response({'message':'Sent cupon mail to following users','recepients_list':recepients_list})
+        #     send_coupon(NewUser.objects.all()[i].email)
+        recepients_list = send_coupon()
+        return Response({'message':'Sent coupon mail to following users','recepients_list':recepients_list})
 # NOW REDIRECT TO ORDER CHECKOUT is_paid check ???

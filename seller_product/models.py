@@ -109,7 +109,7 @@ class Transaction(models.Model):
     def __str__(self):
         return self.transaction_id
 
-class Cupon(models.Model):
+class Coupon(models.Model):
     
     def set_expiry():
         return timezone.now() + timezone.timedelta(days=7)
