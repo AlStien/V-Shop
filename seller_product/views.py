@@ -12,7 +12,8 @@ from seller_product.models import (
             OrderDetails,
             # ProductImage,
             Orders,
-            Transaction
+            Transaction,
+            Cupon
 )
 from rest_framework import filters
 from seller_product.serializers import (
@@ -406,17 +407,37 @@ class CheckoutTransaction(APIView):
         entered_amount = data.get('amount')
         payment_method = data.get('payment_method')
         txn_id = txn_id_generator(request.user.id,entered_amount)
+        amount_paid = entered_amount
+        # try:
+        #     cupon_code = data.get('code')
+        #     cupon = Cupon.objects.get(code=cupon_code)
+        # except:
+        #     cupon_msg = 'Enter valid cupon code'
+        
         try:
             cart_amount = Cart.objects.get(cart_user = request.user).amount
             if cart_amount==entered_amount:
                 print('matched')
                 try:
                     Transaction.objects.create(user=request.user, transaction_id=str(txn_id), amount=int(entered_amount), payment_method=payment_method)
+                    try:
+                        cupon_code = data.get('code')
+                        cupon = Cupon.objects.get(code=cupon_code)
+                        time_now = timezone.now()
+                        if cupon.expiry> time_now:
+                            cupon.used+=1
+                            amount_paid = entered_amount*0.95
+                            cupon_msg = 'Cupon applied 5% discount'
+                        else:
+                            cupon_msg = 'Cupon expired'
+                    except:
+                        cupon_msg = 'Enter valid cupon code'
                     return Response({'message':'Transaction Successful',
                                     'txn_id':txn_id,
                                     'user':request.user.name,
-                                    'amount_paid':entered_amount,
-                                    'payment_method':payment_method}, status=status.HTTP_201_CREATED)
+                                    'amount_paid':amount_paid,
+                                    'payment_method':payment_method,
+                                    'cupon_msg':cupon_msg}, status=status.HTTP_201_CREATED)
                 except:
                     return Response({'message':'Invalid data entered'}, status=status.HTTP_400_BAD_REQUEST)
             return Response({'message':'Enter correct amount'}, status=status.HTTP_400_BAD_REQUEST)

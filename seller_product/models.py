@@ -5,7 +5,7 @@ from django.db.models.deletion import CASCADE
 from rest_framework.fields import DateTimeField, TimeField
 from base.models import NewUser
 from django.core.validators import MaxLengthValidator
-
+from django.utils import timezone
 # a seller can have many products  so many-to-one relationship
 class Product(models.Model):
     # product_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -105,3 +105,18 @@ class Transaction(models.Model):
     transaction_id = models.CharField(max_length=50)
     amount = models.IntegerField()
     payment_method = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.transaction_id
+
+class Cupon(models.Model):
+    
+    def set_expiry():
+        return timezone.now() + timezone.timedelta(days=7)
+        
+    code = models.CharField(max_length=6, unique=True)
+    expiry = models.DateTimeField(default=set_expiry())
+    used = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.code
