@@ -35,7 +35,7 @@ def confMail(email):
     from_email, to = EMAIL_HOST_USER, email
     subject = f"Order Confirmation for {NewUser.objects.get(email = email).name}"
     text_content = f'Thank You for Ordering with Us. If You face any problem with the order, please feel free to contact us. Your Order is on the way with Our Best Delivery Service. With Regards. V-SHOP'
-    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 0.9em;"><p>Thank You for ordering with us. If You Face any problem, Please feel free to Contact Us</p><p>Your Order is On the Way.</p><p style="font-size: 18px;">WITH REGARDS</p><p style="line-height: 1.2em;"><strong style="font-size: 20px; background: #0811ed; padding: 4px 10px; color: white; border-radius: 20px;">V-SHOP</strong></p></span>'
+    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 0.9em;"><p>Thank You for ordering with us. If You Face any problem, Please feel free to Contact Us</p><p>Your Order is On the Way. You Can View Your Orders through the Website or <a href="https://v-shop.netlify.app/orders" style="color: #3fa0cf">Click Here</a></p><p style="font-size: 18px;">WITH REGARDS</p><p style="line-height: 1.2em;"><a href="https://v-shop.netlify.app/profile"><strong style="font-size: 20px; background: #0811ed; padding: 4px 10px; color: white; border-radius: 20px;">V-SHOP</strong></a></p></span>'
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
