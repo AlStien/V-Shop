@@ -31,6 +31,16 @@ from random import choice
 from VShop.settings import EMAIL_HOST_USER
 from django.core.mail import EmailMultiAlternatives
 
+def confMail(email):
+    from_email, to = EMAIL_HOST_USER, email
+    subject = f"Order Confirmation for {NewUser.objects.get(email = email).name}"
+    text_content = f'Thank You for Ordering with Us. If You face any problem with the order, please feel free to contact us. Your Order is on the way with Our Best Delivery Service. With Regards. V-SHOP'
+    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 0.9em;"><p>Thank You for ordering with us. If You Face any problem, Please feel free to Contact Us</p><p>Your Order is On the Way.</p><p style="font-size: 18px;">WITH REGARDS</p><p style="line-height: 1.2em;"><strong style="font-size: 20px; background: #0811ed; padding: 4px 10px; color: white; border-radius: 20px;">V-SHOP</strong></p></span>'
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
 class ProductsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format=None):
@@ -114,15 +124,6 @@ class ProductView(APIView):
             return Response(data={'message':'Product deleted'},status=status.HTTP_204_NO_CONTENT)
         except:
             return Response(data={'message':'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
-
-# class ProductImageView(APIView):
-#     def post(self, request, format=None):
-#         images = request.data.getlist('images')
-#         product = Product.objects.get(seller_email = request.user.id, price = request.data.get("price",), 
-#                                         name=request.data.get("name",))
-#         for i in images:
-#             ProductImage.objects.create(product = product, picture = i)
-#         return Response(status=status.HTTP_202_ACCEPTED)
 
 class SellerProductsView(APIView):
     permission_classes = [IsAuthenticated,]
@@ -332,35 +333,20 @@ class OrderView(APIView):
     def get(self, request, format=None):
         user = request.user
         if Orders.objects.filter(user = user).exists():
-            print("exist")
             order = Orders.objects.filter(user = user)
         else:
-            print("created")
             order = Orders.objects.create(user = user)
-        # print(f"{order} LOL")
         order_last = Orders.objects.create(user = user, amount = 100)
-        print(f"{order_last} afk")
         for o in order:
-            # print(f"{order_last} afk")
             details = OrderDetails.objects.filter(orders = o)
             for detail in details:
-                # print(f"{order_last} afk")
                 print(detail)
                 detail.orders = Orders.objects.filter(user = user).last()
                 print(detail.orders.amount)
                 detail.save()
-            # order_details = OrderDetails.objects.filter(cart_user = cart)
-            # for o in order_details:
-            #     o.orders = order
-            #     o.cart_user = None
-            #     o.save()
-
-        print("gg")
-        print(order_last)
         order = Orders.objects.filter(user = user)
         order[0].delete()
         products = OrderDetails.objects.filter(orders = order_last)
-        print(products)
         serializer = OrderViewSerializer(products, many = True)
         return Response(serializer.data)
 
@@ -379,8 +365,10 @@ class OrderView(APIView):
                 o.orders = order
                 o.cart_user = None
                 o.save()
+            confMail(request.user.email)
             return Response({'message': 'Successfully Ordered'}, status= status.HTTP_202_ACCEPTED)
         return Response({},status = status.HTTP_403_FORBIDDEN)
+
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer

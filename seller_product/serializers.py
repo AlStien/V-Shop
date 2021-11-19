@@ -90,7 +90,7 @@ class ProductsViewSerializer(ModelSerializer):
 #       fields = ['id', 'name', 'price', 'brand', 'description','image_product','comment_product','tag_product']
 
 class OrderViewSerializer(ModelSerializer):
-    product = ProductsViewSerializer(many = True)
+    product = ProductsViewSerializer()
     class Meta:
         model = OrderDetails
         fields = ['product', 'quantity', 'price']
