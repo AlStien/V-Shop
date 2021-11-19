@@ -26,7 +26,9 @@ from seller_product.serializers import (
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-# is_seller check pending
+from random import choice
+from VShop.settings import EMAIL_HOST_USER
+from django.core.mail import EmailMultiAlternatives
 
 class ProductsView(APIView):
     permission_classes = [AllowAny,]
@@ -426,6 +428,7 @@ class CheckoutTransaction(APIView):
                         time_now = timezone.now()
                         if cupon.expiry> time_now:
                             cupon.used+=1
+                            cupon.save()
                             amount_paid = entered_amount*0.95
                             cupon_msg = 'Cupon applied 5% discount'
                         else:
@@ -444,4 +447,37 @@ class CheckoutTransaction(APIView):
         except:
             return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+def send_cupon():
+    # generating cupon code
+    def generate_code():
+        code = ''
+        type = '01'
+        for i in range(6):
+            if choice(type)=='0':
+                code += choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+            else:
+                code += str(choice([i for i in range (10)]))
+        # example UN1AJ9
+        return code
+    
+    code = generate_code()
+    Cupon.objects.create(code = code)
+
+    from_email, to = EMAIL_HOST_USER, [NewUser.objects.filter(is_seller=False)[i].email for i in range(NewUser.objects.filter(is_seller=False).count())]
+    subject = "CUPON for V-Shop"
+    text_content = f'Cupon{code}.\nValid for only 7 days.'
+    html_content = f'<span style="font-family: Arial, Helvetica, sans-serif; font-size: 16px;"><p style="font-size: 18px;">GREETINGS FROM VSHOP</p><p>Your cupon code for 5% dicount on V-Shop is <strong style="font-size: 18px;">{code}</strong>.</p><p>Valid for only 7 days</p></span>'
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+    return to
+
+class SendCupon(APIView):
+    def get(self, request, format=None):
+        # email = request.data.get('email')
+        # for i in range(NewUser.objects.all().count()):
+        #     send_cupon(NewUser.objects.all()[i].email)
+        recepients_list = send_cupon()
+        return Response({'message':'Sent cupon mail to following users','recepients_list':recepients_list})
 # NOW REDIRECT TO ORDER CHECKOUT is_paid check ???
