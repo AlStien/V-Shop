@@ -249,7 +249,7 @@ class WishlistView(APIView):
         product = Product.objects.get(id = request.data.get("id",))
         if product.seller_email == request.user:
             return Response({'message': 'Seller Cannot Wishlist their own Product'}, status = status.HTTP_400_BAD_REQUEST)
-        if NewUser.objects.filter(wishlist = product).exists():
+        if NewUser.objects.filter(wishlist = product, email = request.user.email).exists():
             return Response({'message': 'Product Already in Wishlist'}, status=status.HTTP_208_ALREADY_REPORTED)
         product.wishlist_user.add(user)
         return Response(data = {'message': 'added product to wishlist'}, status=status.HTTP_201_CREATED)

@@ -63,11 +63,14 @@ class AccountList(APIView):
         else:
             # for validation of password (default and custom)
             # validate_password throws exception for valdation errors
-            validate_password(request.data.get('password',))
-            if serializer.is_valid():
-                send_otp(user_email)
-                serializer.save()
-            return Response(serializer.data)
+            try:
+                validate_password(request.data.get('password',))
+                if serializer.is_valid():
+                    send_otp(user_email)
+                    serializer.save()
+                return Response(serializer.data)
+            except:
+                return Response({'message': 'Please Enter a valid password. Password should have atleast 1 Capital Letter, 1 Number and 1 Special Character in it.'},status=status.HTTP_400_BAD_REQUEST)
 
 class AccountDetails(APIView):
     # get a specific account details

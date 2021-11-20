@@ -129,9 +129,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'VShop.validators.SymbolValidator',
     },
-    {
-        'NAME': 'VShop.validators.NumPatternValidator',
-    },
+    # {
+    #     'NAME': 'VShop.validators.NumPatternValidator',
+    # },
 ]
 
 
