@@ -519,6 +519,9 @@ def update_brands_data():
         print("run")
         p = Product.objects.all()
         count = p.count()
+        if Brands.objects.all().exists():
+            Brands.objects.all().update(product_count=0)
+
         try:
             # adding brands to table
             for i in range(count):
