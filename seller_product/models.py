@@ -120,3 +120,11 @@ class Coupon(models.Model):
 
     def __str__(self):
         return self.code
+
+class Brands(models.Model):
+    brand = models.CharField(max_length=50)
+    image = models.ImageField(upload_to = 'brands' ,default = f'brands/wp6611732_wru2sc')
+    product_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.brand

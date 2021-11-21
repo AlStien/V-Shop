@@ -2,7 +2,7 @@ from django.db.models.base import Model
 from rest_framework import fields
 from rest_framework.serializers import ModelSerializer, RelatedField
 from base.models import NewUser
-from seller_product.models import Comment, Product, Tag, OrderDetails
+from seller_product.models import Brands, Comment, Product, Tag, OrderDetails
 from base.api.serializers import AuthorIDSerializer
 from collections import OrderedDict
 
@@ -94,3 +94,8 @@ class OrderViewSerializer(ModelSerializer):
     class Meta:
         model = OrderDetails
         fields = ['product', 'quantity', 'price']
+
+class BrandsSeriaizer(ModelSerializer):
+    class Meta:
+        model = Brands
+        fields = ['brand', 'image', 'product_count']
