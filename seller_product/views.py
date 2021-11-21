@@ -1,3 +1,4 @@
+from django.http import response
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,6 +6,7 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from base.models import NewUser
 from seller_product.models import (
+            Brands,
             Comment, 
             Product, 
             Tag, 
@@ -17,6 +19,7 @@ from seller_product.models import (
 )
 from rest_framework import filters
 from seller_product.serializers import (
+    BrandsSeriaizer,
     ProductSerializer, 
     CommentSerializer, 
     OrderViewSerializer,
@@ -27,7 +30,7 @@ from seller_product.serializers import (
 from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-from random import choice
+from random import choice, random, randint
 from VShop.settings import EMAIL_HOST_USER
 from django.core.mail import EmailMultiAlternatives
 
@@ -508,3 +511,34 @@ class SendCoupon(APIView):
         else:
             return Response({'message':'Only staff members can send coupons'})
 # NOW REDIRECT TO ORDER CHECKOUT is_paid check ???
+
+def update_brands_data():
+    run = randint(1,10)
+    # 20% chances of updating database
+    if run <=2:
+        print("run")
+        p = Product.objects.all()
+        count = p.count()
+        try:
+            # adding brands to table
+            for i in range(count):
+                brand = p[i].brand
+                Brands.objects.get_or_create(brand=brand.lower())
+            # adding product count
+            for i in range(count):
+                b = Brands.objects.get(brand__iexact=p[i].brand)
+                b.product_count +=1                         
+                b.save()
+            # deleting entries with zero products
+            Brands.objects.filter(product_count=0).delete()
+        except:
+            pass
+
+class ShowBrands(APIView):
+
+    def get(self, request, format=None):
+# --------------------SLOW QUERY FUNCTION---------------------------------------# 
+        update_brands_data()
+        brands = Brands.objects.all()
+        serializer = BrandsSeriaizer(brands, many=True)
+        return Response(serializer.data)
