@@ -75,14 +75,14 @@ class AccountList(APIView):
 class AccountDetails(APIView):
     # get a specific account details
     def get(self, request, format = None):
-        user = NewUser.objects.get(email = request.user.email)
+        user = NewUser.objects.get(email__iexact = request.user.email)
         # user = NewUser.objects.get(id=pk)
         serializer = ProfileSerializer(user, many = False)
         return Response(serializer.data)
 
     # update a specific account details
     def put(self, request, format = None):
-        user = NewUser.objects.get(email = request.user.email)
+        user = NewUser.objects.get(email__iexact = request.user.email)
         serializer = ProfileSerializer(instance=user, data = request.data)
 
         if serializer.is_valid():
@@ -92,7 +92,7 @@ class AccountDetails(APIView):
     # delete an account
     def delete(self, request, format = None):
         email = request.user.email
-        user = NewUser.objects.get(email = email)
+        user = NewUser.objects.get(email__iexact = email)
         user.delete()
         return Response({'message': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)
 
