@@ -34,6 +34,7 @@ class ProfileSerializer(ModelSerializer):
         model = NewUser
         fields = ['email', 'name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'address', 'is_seller']
         # fields = ['name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'address', 'is_seller']
+        extra_kwargs = {'email': {'required': False}}
 
 class AuthorIDSerializer(ModelSerializer):
     class Meta:
