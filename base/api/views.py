@@ -54,9 +54,9 @@ class AccountList(APIView):
     # create a new account
     def post(self, request, format = None):
         serializer = AccountSerializer(data=request.data)
-        user_email = request.data.get("email",).lower()
+        user_email = request.data.get("email",)
         # checking if user already exists
-        if NewUser.objects.filter(email = user_email).exists():
+        if NewUser.objects.filter(email__iexact = user_email).exists():
             message = {'message':'User already exists. Please Log-In'}
             return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -82,13 +82,13 @@ class AccountDetails(APIView):
 
     # update a specific account details
     def put(self, request, format = None):
-        user = NewUser.objects.get(email = request.user.email)
-        serializer = ProfileSerializer(instance=user, data = request.data)
-
+        request.data['email'] = request.user.email
+        serializer = ProfileSerializer(instance=request.user, data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
-    
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response({'message':'Invalid'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        
     # delete an account
     def delete(self, request, format = None):
         email = request.user.email
@@ -105,8 +105,8 @@ class OTPView(APIView):
 
     def post(self, request, format = None):
         data_otp = request.data.get("otp",)
-        data_email = request.data.get("email",).lower()
-        user = OTP.objects.get(otpEmail = data_email)
+        data_email = request.data.get("email",)
+        user = OTP.objects.get(otpEmail__iexact = data_email)
         current_time = timezone.now()
         print(current_time)
         print(user.time_created)
@@ -119,7 +119,7 @@ class OTPView(APIView):
                 otp_obj = OTP.objects.get(otp = data_otp)
                 print(otp_obj)
                 print(data_otp)
-                user = NewUser.objects.filter(email = otp_obj.otpEmail)
+                user = NewUser.objects.filter(email__iexact = otp_obj.otpEmail)
                 if otp_obj.time_created + datetime.timedelta(minutes=3) > current_time:
                     # OTP verified
                     user.update(is_verified = True)
@@ -140,7 +140,7 @@ class LoginAPIView(APIView):
     serializer_class = LoginUserSerializer
 
     def post(self, request):
-        email = (request.data.get("email",)).lower()
+        email = (request.data.get("email",))
         password = request.data.get("password",)
         try:
             entered_usr = NewUser.objects.get(email__iexact=email)
@@ -164,9 +164,9 @@ class EmailVerifyView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, format = None):
-        email = request.data.get("email").lower()
-        if NewUser.objects.filter(email = email).exists():
-            user = NewUser.objects.get(email = email)
+        email = request.data.get("email")
+        if NewUser.objects.filter(email__iexact = email).exists():
+            user = NewUser.objects.get(email__iexact = email)
             seraializer = CheckVerify(user)
             return Response(seraializer.data, status=status.HTTP_202_ACCEPTED)
         else:
@@ -188,11 +188,11 @@ class PasswordChangeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        email = request.data.get("email",).lower()
+        email = request.data.get("email",)
         password = request.data.get("new password")
-        if OTP.objects.filter(otpEmail = email).exists():
-            if NewUser.objects.filter(email = email).exists():
-                user = NewUser.objects.get(email = email)
+        if OTP.objects.filter(otpEmail__iexact = email).exists():
+            if NewUser.objects.filter(email__iexact = email).exists():
+                user = NewUser.objects.get(email__iexact = email)
                 if user.password == password:
                     message = {'message':'Password cannot be same as old one'}
                     return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -221,9 +221,9 @@ class BecomeSellerView(APIView):
         
         email = request.user.email
 
-        if OTP.objects.filter(otpEmail = email).exists():
-            if NewUser.objects.filter(email = email).exists():
-                user = NewUser.objects.get(email = request.user.email)
+        if OTP.objects.filter(otpEmail__iexact = email).exists():
+            if NewUser.objects.filter(email__iexact = email).exists():
+                user = NewUser.objects.get(email__iexact = request.user.email)
                 user.is_seller = True
                 user.save()
                 serializer = ProfileSerializer(user, many=False)

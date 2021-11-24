@@ -10,3 +10,5 @@ admin.site.register(models.Orders)
 admin.site.register(models.Transaction)
 admin.site.register(models.Coupon)
 admin.site.register(models.ProductImage)
+admin.site.register(models.Brands)
+

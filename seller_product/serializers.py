@@ -3,6 +3,7 @@ from rest_framework import fields
 from rest_framework.serializers import ModelSerializer, RelatedField
 from base.models import NewUser
 from seller_product.models import Comment, Product, Tag, OrderDetails, ProductImage
+from seller_product.models import Brands, Comment, Product, Tag, OrderDetails
 from base.api.serializers import AuthorIDSerializer
 from collections import OrderedDict
 
@@ -47,7 +48,7 @@ class ProductsViewSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'brand', 'description', 'picture1', 'picture2', 'picture3', 'picture4', 
+        fields = ['id', 'name', 'price', 'brand', 'avg_rating', 'description', 'picture1', 'picture2', 'picture3', 'picture4', 
         'comment_product', 'tag_product']
 
     def to_representation(self, instance):
@@ -60,10 +61,16 @@ class ProductsViewSerializer(ModelSerializer):
         
         try:
             i = 0
+            avg_rating = 0
+
             for i in range(len(data['comment_product'])):
                 author_id = data['comment_product'][i]['author']
                 name = NewUser.objects.get(id=author_id).name
                 data['comment_product'][i]['author'] = name
+
+                avg_rating += data['comment_product'][i]['rating']
+
+            data['avg_rating'] = int(avg_rating/(i+1))
         except:
             print('error')
         # tag = Tag.objects.get(id = id[0])
@@ -95,3 +102,8 @@ class OrderViewSerializer(ModelSerializer):
     class Meta:
         model = OrderDetails
         fields = ['product', 'quantity', 'price']
+
+class BrandsSeriaizer(ModelSerializer):
+    class Meta:
+        model = Brands
+        fields = ['brand', 'image', 'product_count']
