@@ -13,9 +13,8 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     price = models.IntegerField()
     brand = models.CharField(max_length=50)
-    avg_rating = models.IntegerField(default=0)
     description = models.CharField(max_length=300)
-    no_of_sales = models.IntegerField(default=0, blank = True)
+    no_of_sales = models.IntegerField(default=0)
     picture1 = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
     picture2 = models.ImageField(upload_to = 'products' , null = True, blank = True)
     picture3 = models.ImageField(upload_to = 'products' , null = True, blank = True)
@@ -121,11 +120,3 @@ class Coupon(models.Model):
 
     def __str__(self):
         return self.code
-
-class Brands(models.Model):
-    brand = models.CharField(max_length=50)
-    image = models.ImageField(upload_to = 'brands' ,default = f'brands/wp6611732_wru2sc')
-    product_count = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.brand

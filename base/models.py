@@ -30,13 +30,6 @@ class CustomAccountManager(BaseUserManager):
             raise ValueError(_('You must provide an email address'))
 
         email = self.normalize_email(email)
-        # this is done as normalization would result in 
-        # 1. abc@GMAIL.COM -> abc@gmail.com
-        # 2. ABC@GMAIL.COM -> ABC@gmail.com
-        # Since email are unique identifiers in our app 
-        # but practically both emails are exactly the same but only normalization would result in redundancy
-        email = email.lower()
-        name = name.strip().title()
         user = self.model(email=email, name=name, **other_fields)
         user.set_password(password)
         user.save()
@@ -52,7 +45,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
     )
 
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(_('email address'), validators=[EmailValidator()], unique=True)
+    email = models.EmailField(_('email address'), validators=[EmailValidator()], unique=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True, default='none')
     dateOfBirth = models.DateTimeField(blank=True, null=True)
     picture = models.ImageField(upload_to = 'images' ,default = 'images/user.png')
