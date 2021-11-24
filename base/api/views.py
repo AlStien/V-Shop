@@ -82,13 +82,12 @@ class AccountDetails(APIView):
 
     # update a specific account details
     def put(self, request, format = None):
-        # user = NewUser.objects.get(email = request.user.email)
         serializer = ProfileSerializer(instance=request.user, data = request.data)
-
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
-    
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response({'message':'Invalid'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        
     # delete an account
     def delete(self, request, format = None):
         email = request.user.email
