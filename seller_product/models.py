@@ -32,12 +32,12 @@ class Product(models.Model):
     def total_income(self):
         return self.no_of_sales*self.price
 
-# class ProductImage(models.Model):
-#     product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
-#     picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png', null = True
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
+    picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
 
-#     def picture(self):
-#         return self.picture
+    # def picture(self):
+    #     return self.picture
 
 class Cart(models.Model):
     cart_user = models.OneToOneField(NewUser, related_name='user', on_delete=models.CASCADE)

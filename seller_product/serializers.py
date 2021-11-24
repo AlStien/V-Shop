@@ -2,7 +2,7 @@ from django.db.models.base import Model
 from rest_framework import fields
 from rest_framework.serializers import ModelSerializer, RelatedField
 from base.models import NewUser
-from seller_product.models import Comment, Product, Tag, OrderDetails
+from seller_product.models import Comment, Product, Tag, OrderDetails, ProductImage
 from base.api.serializers import AuthorIDSerializer
 from collections import OrderedDict
 
@@ -80,14 +80,15 @@ class ProductsViewSerializer(ModelSerializer):
     #     data['product_images'] = product_images
     #     return data
 
-# class ProductImageSerializer(ModelSerializer):
-#     product = ProductsViewSerializer()
-#     # picture = ProductImage.picture
-#     class Meta:
-#         model = ProductImage
-#         fields = ['product', 'picture']
-#         depth = 5
-#       fields = ['id', 'name', 'price', 'brand', 'description','image_product','comment_product','tag_product']
+class ProductImageSerializer(ModelSerializer):
+    # picture = ProductImage.picture
+    # product = ProductSerializer()
+    class Meta:
+        model = ProductImage
+        fields = ['product', 'picture']
+
+    # def create(self, validated_data):
+    #     return Product.objects.create(**validated_data)
 
 class OrderViewSerializer(ModelSerializer):
     product = ProductsViewSerializer()

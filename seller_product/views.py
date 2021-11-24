@@ -10,7 +10,7 @@ from seller_product.models import (
             Tag, 
             Cart, 
             OrderDetails,
-            # ProductImage,
+            ProductImage,
             Orders,
             Transaction,
             Coupon
@@ -22,14 +22,21 @@ from seller_product.serializers import (
     OrderViewSerializer,
     ProductsViewSerializer,
     # OrderGetSerializer
-    # ProductImageSerializer,
+    ProductImageSerializer,
+    TagSerializer,
 )
-from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
+# from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from random import choice
 from VShop.settings import EMAIL_HOST_USER
 from django.core.mail import EmailMultiAlternatives
+
+def modify_input_for_multiple_files(property_id, image):
+    dict = {}
+    dict['product'] = property_id
+    dict['picture'] = image
+    return dict
 
 def confMail(email):
     from_email, to = EMAIL_HOST_USER, email
@@ -50,6 +57,7 @@ class ProductsView(APIView):
                 if user.is_seller:
                     data = Product.objects.exclude(seller_email = user.id)
             else:
+                print("gg")
                 data = Product.objects.all()
             serializer = ProductsViewSerializer(data, many = True)
             return Response(serializer.data)
@@ -136,6 +144,28 @@ class SellerProductsView(APIView):
         else:
             return Response({'message': 'User Not a Seller'}, status=status.HTTP_403_FORBIDDEN)
 
+class ProductImageView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        # product = Product.objects.get(id = request.data.get('id',))
+        product = data.get('id',)
+        images = dict((request.data).lists())['picture']
+        print(images)
+        arr = []
+        for i in images:
+            print(f'i {i}')
+            # ProductImage.objects.create(product = product, picture = i)
+            modified_data = modify_input_for_multiple_files(product, i)
+            print(f'yayy {modified_data}')
+            serializer = ProductImageSerializer(data = modified_data)
+            print(serializer)
+            if serializer.is_valid():
+                serializer.save()
+                print(f'sd {serializer.data}')
+                arr.append(serializer.data)
+                # return Response(serializer.data)
+            print(f'arr {arr}')
+        return Response(arr)
 
 class Comment_add_api(APIView):
 
@@ -190,6 +220,7 @@ class Comment_add_api(APIView):
 
 class Comment_view_api(APIView):
     # to get comments for a particular product
+    permission_classes = [AllowAny,]
     def get(self, request, format=None):
         data = request.data
         comment = Comment.objects.filter(product=data['product'])
