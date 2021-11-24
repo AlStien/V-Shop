@@ -82,6 +82,7 @@ class AccountDetails(APIView):
 
     # update a specific account details
     def put(self, request, format = None):
+        request.data['email'] = request.user.email
         serializer = ProfileSerializer(instance=request.user, data = request.data)
         if serializer.is_valid():
             serializer.save()
