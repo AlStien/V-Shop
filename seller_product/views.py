@@ -72,8 +72,21 @@ class ProductDetailsView(APIView):
     def get(self, request, format = None):
         try:
             product = Product.objects.get(id = int(request.data.get("id",)))
+            product_images = ProductImage.objects.filter(product = product)
             serializer = ProductsViewSerializer(product, many=False)
-            return Response(serializer.data)
+            try:
+                serializer_image = ProductImageSerializer(product_images, many = True)
+                print(serializer_image)
+                Serializer_list = [serializer.data, serializer_image.data]
+
+                content = {
+                    'status': 1, 
+                    'responseCode' : status.HTTP_302_FOUND, 
+                    'data': Serializer_list,
+                }
+                return Response(content)
+            except:
+                return Response(serializer.data)
         except:
             return Response({'message': 'Product Not Found'}, status= status.HTTP_400_BAD_REQUEST)
 

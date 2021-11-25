@@ -17,9 +17,9 @@ class Product(models.Model):
     description = models.CharField(max_length=300)
     no_of_sales = models.IntegerField(default=0, blank = True)
     picture1 = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
-    picture2 = models.ImageField(upload_to = 'products' , null = True, blank = True)
-    picture3 = models.ImageField(upload_to = 'products' , null = True, blank = True)
-    picture4 = models.ImageField(upload_to = 'products' , null = True, blank = True)
+    # picture2 = models.ImageField(upload_to = 'products' , null = True, blank = True)
+    # picture3 = models.ImageField(upload_to = 'products' , null = True, blank = True)
+    # picture4 = models.ImageField(upload_to = 'products' , null = True, blank = True)
 
     wishlist_user = models.ManyToManyField(NewUser, related_name='wishlist', blank=True)
     # cart = models.ManyToManyField(Cart, related_name='cart')
@@ -37,8 +37,8 @@ class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=CASCADE, null=True, blank=True)
     picture = models.ImageField(upload_to = 'products' ,default = f'products/default.png')
 
-    # def picture(self):
-    #     return self.picture
+    def __str__(self):
+        return self.product.name
 
 class Cart(models.Model):
     cart_user = models.OneToOneField(NewUser, related_name='user', on_delete=models.CASCADE)

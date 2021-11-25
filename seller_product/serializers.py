@@ -32,7 +32,7 @@ class ProductSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['seller_email', 'name', 'price','brand', 'description','picture1','picture2', 'picture3', 'picture4']
+        fields = ['seller_email', 'name', 'price','brand', 'description','picture1']
 
     # def to_representation(self, instance):
     #     data = super(Auth).to_representation(instance)
@@ -48,8 +48,7 @@ class ProductsViewSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'brand', 'avg_rating', 'description', 'picture1', 'picture2', 'picture3', 'picture4', 
-        'comment_product', 'tag_product']
+        fields = ['id', 'name', 'price', 'brand', 'avg_rating', 'description', 'picture1', 'comment_product', 'tag_product']
 
     def to_representation(self, instance):
         data = super(ProductsViewSerializer, self).to_representation(instance)
@@ -88,14 +87,9 @@ class ProductsViewSerializer(ModelSerializer):
     #     return data
 
 class ProductImageSerializer(ModelSerializer):
-    # picture = ProductImage.picture
-    # product = ProductSerializer()
     class Meta:
         model = ProductImage
         fields = ['product', 'picture']
-
-    # def create(self, validated_data):
-    #     return Product.objects.create(**validated_data)
 
 class OrderViewSerializer(ModelSerializer):
     product = ProductsViewSerializer()
