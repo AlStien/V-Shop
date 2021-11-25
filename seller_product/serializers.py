@@ -4,7 +4,7 @@ from rest_framework.serializers import ModelSerializer, RelatedField
 from base.models import NewUser
 from seller_product.models import Comment, Product, Tag, OrderDetails, ProductImage
 from seller_product.models import Brands, Comment, Product, Tag, OrderDetails
-from base.api.serializers import AuthorIDSerializer
+from base.serializers import AuthorIDSerializer
 from collections import OrderedDict
 
 class TagSerializer(ModelSerializer):

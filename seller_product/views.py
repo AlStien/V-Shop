@@ -89,7 +89,6 @@ class ProductDetailsView(APIView):
                 return Response(serializer.data)
         except:
             return Response({'message': 'Product Not Found'}, status= status.HTTP_400_BAD_REQUEST)
-
     
 class ProductView(APIView):
     permission_classes = [IsAuthenticated]
@@ -148,17 +147,6 @@ class ProductView(APIView):
             return Response(data={'message':'Product deleted'},status=status.HTTP_204_NO_CONTENT)
         except:
             return Response(data={'message':'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
-
-class SellerProductsView(APIView):
-    permission_classes = [IsAuthenticated,]
-    def get(self, request, format = None):
-        user = request.user
-        if user.is_seller:
-            products = Product.objects.filter(seller_email = request.user.id)
-            serializer = ProductsViewSerializer(products, many = True)
-            return Response(serializer.data)
-        else:
-            return Response({'message': 'User Not a Seller'}, status=status.HTTP_403_FORBIDDEN)
 
 class ProductImageView(APIView):
     def post(self, request, *args, **kwargs):
@@ -581,7 +569,7 @@ def update_brands_data():
 class ShowBrands(APIView):
 
     def get(self, request, format=None):
-# --------------------SLOW QUERY FUNCTION---------------------------------------# 
+    # --------------------SLOW QUERY FUNCTION---------------------------------------# 
         update_brands_data()
         brands = Brands.objects.all()
         serializer = BrandsSeriaizer(brands, many=True)
