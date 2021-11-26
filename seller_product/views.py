@@ -623,5 +623,8 @@ class Delivery(APIView):
         p = Product.objects.get(id = product_id)
         seller_address = p.seller_email.address
         user_address = request.user.address
-        days, calculated_distance = delivery_time(seller_address, user_address)
-        return Response({'days':'delivery in '+str(days)+' days','distance': str(calculated_distance)+' kms'})
+        try:
+            days, calculated_distance = delivery_time(seller_address, user_address)
+            return Response({'days':'delivery in '+str(days)+' days','distance': str(calculated_distance)+' kms'})
+        except:
+            return Response({'message':'API Issue'})
