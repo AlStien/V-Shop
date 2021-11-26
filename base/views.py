@@ -219,3 +219,19 @@ class PasswordChangeView(APIView):
                 serializer = ProfileSerializer(user, many=False)
                 return Response(serializer.data)  
         return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  
+
+class PrimeMember(APIView):
+
+    permission_classes = [IsAuthenticated,]
+    def put(self, request, format=None):
+        
+        email = request.user.email
+
+        if OTP.objects.filter(otpEmail__iexact = email).exists():
+            if NewUser.objects.filter(email__iexact = email).exists():
+                user = NewUser.objects.get(email__iexact = request.user.email)
+                user.is_prime = True
+                user.save()
+                serializer = ProfileSerializer(user, many=False)
+                return Response(serializer.data)  
+        return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  

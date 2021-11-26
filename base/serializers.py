@@ -32,7 +32,7 @@ class LoginUserSerializer(serializers.Serializer):
 class ProfileSerializer(ModelSerializer):
     class Meta:
         model = NewUser
-        fields = ['email', 'name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'address', 'is_seller']
+        fields = ['email', 'name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'address', 'is_prime', 'is_seller']
         # fields = ['name', 'dateOfBirth', 'gender', 'mobile', 'picture', 'address', 'is_seller']
         extra_kwargs = {'email': {'required': False}}
 
