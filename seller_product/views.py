@@ -1,5 +1,3 @@
-from django.http import response
-from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -12,7 +10,7 @@ from seller_product.models import (
             Tag, 
             Cart, 
             OrderDetails,
-            ProductImage,
+            # ProductImage,
             Orders,
             Transaction,
             Coupon
@@ -25,7 +23,7 @@ from seller_product.serializers import (
     OrderViewSerializer,
     ProductsViewSerializer,
     # OrderGetSerializer
-    ProductImageSerializer,
+    # ProductImageSerializer,
     TagSerializer,
 )
 # from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
@@ -50,7 +48,6 @@ def confMail(email):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
-
 class ProductsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format=None):
@@ -72,21 +69,22 @@ class ProductDetailsView(APIView):
     def get(self, request, format = None):
         try:
             product = Product.objects.get(id = int(request.data.get("id",)))
-            product_images = ProductImage.objects.filter(product = product)
             serializer = ProductsViewSerializer(product, many=False)
-            try:
-                serializer_image = ProductImageSerializer(product_images, many = True)
-                print(serializer_image)
-                Serializer_list = [serializer.data, serializer_image.data]
+            # product_images = ProductImage.objects.filter(product = product)
+            # try:
+            #     serializer_image = ProductImageSerializer(product_images, many = True)
+            #     print(serializer_image)
+            #     Serializer_list = [serializer.data, serializer_image.data]
 
-                content = {
-                    'status': 1, 
-                    'responseCode' : status.HTTP_302_FOUND, 
-                    'data': Serializer_list,
-                }
-                return Response(content)
-            except:
-                return Response(serializer.data)
+            #     content = {
+            #         'status': 1, 
+            #         'responseCode' : status.HTTP_302_FOUND, 
+            #         'data': Serializer_list,
+            #     }
+            #     return Response(content)
+            # except:
+            #     return Response(serializer.data)
+            return Response(serializer.data)
         except:
             return Response({'message': 'Product Not Found'}, status= status.HTTP_400_BAD_REQUEST)
     
@@ -148,28 +146,28 @@ class ProductView(APIView):
         except:
             return Response(data={'message':'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-class ProductImageView(APIView):
-    def post(self, request, *args, **kwargs):
-        data = request.data
-        # product = Product.objects.get(id = request.data.get('id',))
-        product = data.get('id',)
-        images = dict((request.data).lists())['picture']
-        print(images)
-        arr = []
-        for i in images:
-            print(f'i {i}')
-            # ProductImage.objects.create(product = product, picture = i)
-            modified_data = modify_input_for_multiple_files(product, i)
-            print(f'yayy {modified_data}')
-            serializer = ProductImageSerializer(data = modified_data)
-            print(serializer)
-            if serializer.is_valid():
-                serializer.save()
-                print(f'sd {serializer.data}')
-                arr.append(serializer.data)
-                # return Response(serializer.data)
-            print(f'arr {arr}')
-        return Response(arr)
+# class ProductImageView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         data = request.data
+#         # product = Product.objects.get(id = request.data.get('id',))
+#         product = data.get('id',)
+#         images = dict((request.data).lists())['picture']
+#         print(images)
+#         arr = []
+#         for i in images:
+#             print(f'i {i}')
+#             # ProductImage.objects.create(product = product, picture = i)
+#             modified_data = modify_input_for_multiple_files(product, i)
+#             print(f'yayy {modified_data}')
+#             serializer = ProductImageSerializer(data = modified_data)
+#             print(serializer)
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 print(f'sd {serializer.data}')
+#                 arr.append(serializer.data)
+#                 # return Response(serializer.data)
+#             print(f'arr {arr}')
+#         return Response(arr)
 
 class Comment_add_api(APIView):
 

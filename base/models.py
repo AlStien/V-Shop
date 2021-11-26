@@ -14,6 +14,7 @@ class CustomAccountManager(BaseUserManager):
         other_fields.setdefault('is_superuser', True)
         other_fields.setdefault('is_active', True)
         other_fields.setdefault('is_verified', True)
+        other_fields.setdefault('is_prime', True)
 
         if other_fields.get('is_staff') is not True:
             raise ValueError(
@@ -63,6 +64,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
+    is_prime = models.BooleanField(default=False)
 
     objects = CustomAccountManager()
 

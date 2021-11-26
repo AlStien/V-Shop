@@ -1,11 +1,7 @@
-from django.db.models.base import Model
-from rest_framework import fields
-from rest_framework.serializers import ModelSerializer, RelatedField
+from rest_framework.serializers import ModelSerializer
 from base.models import NewUser
-from seller_product.models import Comment, Product, Tag, OrderDetails, ProductImage
+from seller_product.models import Comment, Product, Tag, OrderDetails
 from seller_product.models import Brands, Comment, Product, Tag, OrderDetails
-from base.serializers import AuthorIDSerializer
-from collections import OrderedDict
 
 class TagSerializer(ModelSerializer):
     class Meta:
@@ -32,7 +28,7 @@ class ProductSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['seller_email', 'name', 'price','brand', 'description','picture1']
+        fields = ['seller_email', 'name', 'price', 'brand', 'description','picture1', 'picture2', 'picture3', 'picture4']
 
     # def to_representation(self, instance):
     #     data = super(Auth).to_representation(instance)
@@ -48,7 +44,7 @@ class ProductsViewSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'brand', 'avg_rating', 'description', 'picture1', 'comment_product', 'tag_product']
+        fields = ['id', 'name', 'price', 'brand', 'avg_rating', 'description', 'picture1', 'picture2', 'picture3', 'picture4', 'comment_product', 'tag_product']
 
     def to_representation(self, instance):
         data = super(ProductsViewSerializer, self).to_representation(instance)
@@ -86,10 +82,10 @@ class ProductsViewSerializer(ModelSerializer):
     #     data['product_images'] = product_images
     #     return data
 
-class ProductImageSerializer(ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ['product', 'picture']
+# class ProductImageSerializer(ModelSerializer):
+#     class Meta:
+#         model = ProductImage
+#         fields = ['product', 'picture']
 
 class OrderViewSerializer(ModelSerializer):
     product = ProductsViewSerializer()
