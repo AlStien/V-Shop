@@ -1,7 +1,15 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
+from random import choice, randint
+from VShop.settings import EMAIL_HOST_USER
+from django.core.mail import EmailMultiAlternatives
+# ------ rest framework imports -------
+from rest_framework import status, generics
+from rest_framework import filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+# ------ Apps imports -------
 from base.models import NewUser
 from seller_product.models import (
             Brands,
@@ -15,7 +23,6 @@ from seller_product.models import (
             Transaction,
             Coupon
 )
-from rest_framework import filters
 from seller_product.serializers import (
     BrandsSeriaizer,
     ProductSerializer, 
@@ -26,12 +33,7 @@ from seller_product.serializers import (
     # ProductImageSerializer,
     TagSerializer,
 )
-# from seller_product.serializers import ProductSerializer, CommentSerializer, TagSerializer, ProductsViewSerializer
-from django_filters.rest_framework import DjangoFilterBackend
-from django.utils import timezone
-from random import choice, random, randint
-from VShop.settings import EMAIL_HOST_USER
-from django.core.mail import EmailMultiAlternatives
+
 
 from math import cos, asin, sqrt, pi
 import requests
@@ -40,12 +42,17 @@ import os
 # for positionstack api
 access_key = str(os.getenv('POSITIONSTACK_KEY'))
 
+
+# ------ To Modify inputs for mutiple files, 
+# converts each input to a signle dictionary on each call -------
+
 def modify_input_for_multiple_files(property_id, image):
     dict = {}
     dict['product'] = property_id
     dict['picture'] = image
     return dict
 
+# ------ Order Confirmation Mail -------
 def confMail(email):
     from_email, to = EMAIL_HOST_USER, email
     subject = f"Order Confirmation for {NewUser.objects.get(email = email).name}"
@@ -55,6 +62,7 @@ def confMail(email):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
+# ------ All Products List -------
 class ProductsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format=None):
@@ -71,6 +79,7 @@ class ProductsView(APIView):
         except:
             return Response({'message': 'No Products Found'}, status=status.HTTP_404_NOT_FOUND)
 
+# ------ Specific Product Details -------
 class ProductDetailsView(APIView):
     permission_classes = [AllowAny,]
     def get(self, request, format = None):
@@ -95,6 +104,7 @@ class ProductDetailsView(APIView):
         except:
             return Response({'message': 'Product Not Found'}, status= status.HTTP_400_BAD_REQUEST)
     
+# ------ Post, Put and Delete For Product with given id -------
 class ProductView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -176,6 +186,7 @@ class ProductView(APIView):
 #             print(f'arr {arr}')
 #         return Response(arr)
 
+# ------ Rating and Reviews -------
 class Comment_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -227,6 +238,7 @@ class Comment_add_api(APIView):
         except:
             return Response(data={'message':'Comment not found'}, status=status.HTTP_400_BAD_REQUEST)
 
+# ------ View Ratings and reviews -------
 class Comment_view_api(APIView):
     # to get comments for a particular product
     permission_classes = [AllowAny,]
@@ -239,6 +251,7 @@ class Comment_view_api(APIView):
         else:
             return Response(data = {'message':'comments not found'}, status=status.HTTP_400_BAD_REQUEST)
 
+# ------ Add Tags for Product -------
 class Tag_add_api(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -275,6 +288,7 @@ class Tag_add_api(APIView):
         else:
             return Response(data = {'message': 'enter a tag'}, status=status.HTTP_400_BAD_REQUEST)
 
+# ------ User Wishlist -------
 class WishlistView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -305,6 +319,7 @@ class WishlistView(APIView):
         else:
             return Response({'message': 'Product Not in Wishlist'}, status = status.HTTP_404_NOT_FOUND)
 
+# ------ User Cart -------
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -356,6 +371,7 @@ class CartView(APIView):
         except:
             return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
 
+# ------ Remove Item Completely From Cart -------
 class CartDeleteView(APIView):
 
     def delete(self, request, format = None):
@@ -369,6 +385,7 @@ class CartDeleteView(APIView):
         except:
             return Response({'message': 'No item Found'}, status=status.HTTP_404_NOT_FOUND)
 
+# ------ User Orders (getting past and placing New) -------
 class OrderView(APIView):
     def get(self, request, format=None):
         user = request.user
@@ -409,6 +426,7 @@ class OrderView(APIView):
             return Response({'message': 'Successfully Ordered'}, status= status.HTTP_202_ACCEPTED)
         return Response({},status = status.HTTP_403_FORBIDDEN)
 
+# ------ Searching -------
 class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
@@ -420,6 +438,7 @@ class SearchProduct(generics.ListAPIView):
     # default ordering
     ordering = ['price']
 
+# ------ Filtering -------
 class SearchFilterProduct(APIView):
     def get(self, request, format=None):
         data = request.data
@@ -447,6 +466,7 @@ class SearchFilterProduct(APIView):
 
 # REDIRECT FROM CART
 
+# ------ To generate Transaction ID -------
 def txn_id_generator(id,amount):
     t = str(timezone.now())
     t = t.replace(' ','').replace('-','').replace(':','').replace('.','').replace('+','')
@@ -454,6 +474,7 @@ def txn_id_generator(id,amount):
     # example 2U202111181756094092860000A5675
     return t
 
+# ------ Transaction -------
 class CheckoutTransaction(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -501,6 +522,7 @@ class CheckoutTransaction(APIView):
         # except:
             # return Response({'message':'Cart not found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+# ------ To Generate and send Coupon via E-Mail -------
 def send_coupon():
     # generating coupon code
     def generate_code():
@@ -538,6 +560,7 @@ def send_coupon():
 
     return to
 
+# ------ To Send Coupon to Users -------
 class SendCoupon(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -549,6 +572,7 @@ class SendCoupon(APIView):
             return Response({'message':'Only staff members can send coupons'})
 # NOW REDIRECT TO ORDER CHECKOUT is_paid check ???
 
+# ------ Brands -------
 def update_brands_data():
     run = randint(1,10)
     # 20% chances of updating database
@@ -571,6 +595,7 @@ def update_brands_data():
         except:
             pass
 
+# ------ Getting Brands Names -------
 class ShowBrands(APIView):
 
     def get(self, request, format=None):
