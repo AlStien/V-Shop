@@ -24,5 +24,6 @@ urlpatterns = [
     path('search-filter-product/', views.SearchFilterProduct.as_view()),
     path('view-comment/', views.Comment_view_api.as_view()),
     path('show-brands/', views.ShowBrands.as_view()),
+    path('delivery/', views.Delivery.as_view()),
 
 ]
