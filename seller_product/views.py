@@ -34,8 +34,18 @@ from seller_product.serializers import (
     TagSerializer,
 )
 
+
+from math import cos, asin, sqrt, pi
+import requests
+import os
+
+# for positionstack api
+access_key = str(os.getenv('POSITIONSTACK_KEY'))
+
+
 # ------ To Modify inputs for mutiple files, 
 # converts each input to a signle dictionary on each call -------
+
 def modify_input_for_multiple_files(property_id, image):
     dict = {}
     dict['product'] = property_id
@@ -594,3 +604,52 @@ class ShowBrands(APIView):
         brands = Brands.objects.all()
         serializer = BrandsSeriaizer(brands, many=True)
         return Response(serializer.data)
+
+
+# access key defined at top
+def delivery_time(address1, address2):
+
+    lat_long_list = list()
+
+    def get_lat_long(address):
+        response = requests.get(f"http://api.positionstack.com/v1/forward?access_key={access_key}&query={address}")
+        response.encoding = response.apparent_encoding
+        val = response.json()['data']
+
+        lat_long_list.append(val[0]['latitude'])
+        lat_long_list.append(val[0]['longitude'])
+
+    get_lat_long(address1)
+    get_lat_long(address2)
+
+    def distance(lat1, lon1, lat2, lon2):
+        p = pi/180
+        a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p) * cos(lat2*p) * (1-cos((lon2-lon1)*p))/2
+        return 12742 * asin(sqrt(a)) #2*R*asin...
+
+    calculated_distance = distance(lat_long_list[0],lat_long_list[1], lat_long_list[2], lat_long_list[3])
+
+    if calculated_distance <=100:
+        days = 2
+    elif calculated_distance >100 and calculated_distance <=300:
+        days = 3
+    elif calculated_distance >300 and calculated_distance <=500:
+        days = 4
+    else:
+        days = 7
+        # greater than 500 kms
+
+    return days, calculated_distance
+
+class Delivery(APIView):
+
+    def get(self, request, format=None):
+        product_id = request.data.get('product_id')
+        p = Product.objects.get(id = product_id)
+        seller_address = p.seller_email.address
+        user_address = request.user.address
+        try:
+            days, calculated_distance = delivery_time(seller_address, user_address)
+            return Response({'days':'delivery in '+str(days)+' days','distance': str(calculated_distance)+' kms'})
+        except:
+            return Response({'message':'API Issue'})
