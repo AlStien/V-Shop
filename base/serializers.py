@@ -1,6 +1,6 @@
 from base.models import NewUser, OTP
 from rest_framework.serializers import ModelSerializer
-from rest_framework import fields, serializers
+from rest_framework import serializers
 
 class AccountSerializer(ModelSerializer):
     class Meta:
