@@ -24,11 +24,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-    def pid(self):
-        return self.product_id
-
-    def total_income(self):
-        return self.no_of_sales*self.price
 
 # # ------ Separate Model for Product Images -------
 # class ProductImage(models.Model):

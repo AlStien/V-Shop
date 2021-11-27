@@ -46,11 +46,11 @@ access_key = str(os.getenv('POSITIONSTACK_KEY'))
 # ------ To Modify inputs for mutiple files, 
 # converts each input to a signle dictionary on each call -------
 
-def modify_input_for_multiple_files(property_id, image):
-    dict = {}
-    dict['product'] = property_id
-    dict['picture'] = image
-    return dict
+# def modify_input_for_multiple_files(property_id, image):
+#     dict = {}
+#     dict['product'] = property_id
+#     dict['picture'] = image
+#     return dict
 
 # ------ Order Confirmation Mail -------
 def confMail(email):
@@ -345,7 +345,7 @@ class CartView(APIView):
         else:
             user_cart = Cart.objects.create(cart_user = user)
         if product.seller_email == user.id:
-            return Response({'message': 'Seller Cannot Wishlist their own Product'}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Seller Cannot add their own Product to cart'}, status = status.HTTP_400_BAD_REQUEST)
         if OrderDetails.objects.filter(product=product, cart_user = user_cart).exists():
             order = OrderDetails.objects.get(product=product, cart_user = user_cart)
             order.quantity = order.quantity + quantity
@@ -396,7 +396,7 @@ class OrderView(APIView):
             order = Orders.objects.filter(user = user)
         else:
             order = Orders.objects.create(user = user)
-        order_last = Orders.objects.create(user = user, amount = 100)
+        order_last = Orders.objects.create(user = user)
         for o in order:
             details = OrderDetails.objects.filter(orders = o)
             for detail in details:
@@ -434,7 +434,7 @@ class SearchProduct(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductsViewSerializer
     # djangoFilterBackend for categories/filters
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     # filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name','tag_product__tag','brand']
     ordering_fields = ['name','price','brand']
