@@ -68,14 +68,11 @@ class ProductsView(APIView):
     def get(self, request, format=None):
         try:
             if NewUser.objects.filter(id = request.user.id).exists():
-                print("exists")
                 user = NewUser.objects.get(id = request.user.id)
                 if user.is_seller:
                     data = Product.objects.exclude(seller_email = user.id)
-                else:
-                    print("gg")
-                    data = Product.objects.all()
             else:
+                print("gg")
                 data = Product.objects.all()
             serializer = ProductsViewSerializer(data, many = True)
             return Response(serializer.data)
