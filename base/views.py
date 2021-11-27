@@ -177,8 +177,7 @@ class EmailVerifyView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, format = None):
-        email = request.data.get("email") or request.user.email
-        email = email.lower()
+        email = request.data.get("email")
         if NewUser.objects.filter(email__iexact = email).exists():
             user = NewUser.objects.get(email__iexact = email)
             seraializer = CheckVerify(user)
@@ -189,9 +188,7 @@ class EmailVerifyView(APIView):
             
 
     def post(self, request):
-        email = request.data.get("email",) or request.user.email
-        email = email.lower()
-        print(email)
+        email = request.data.get("email",).lower()
         if NewUser.objects.filter(email = email).exists():
             send_otp(email)
             message = {'message':'OTP sent to registered Email'}

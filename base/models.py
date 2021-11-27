@@ -30,7 +30,6 @@ class CustomAccountManager(BaseUserManager):
             raise ValueError(_('You must provide an email address'))
 
         email = self.normalize_email(email)
-        email = email.lower()
         # this is done as normalization would result in 
         # 1. abc@GMAIL.COM -> abc@gmail.com
         # 2. ABC@GMAIL.COM -> ABC@gmail.com
