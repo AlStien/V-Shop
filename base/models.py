@@ -35,7 +35,6 @@ class CustomAccountManager(BaseUserManager):
         # 2. ABC@GMAIL.COM -> ABC@gmail.com
         # Since email are unique identifiers in our app 
         # but practically both emails are exactly the same but only normalization would result in redundancy
-        email = email.lower()
         name = name.strip().title()
         user = self.model(email=email, name=name, **other_fields)
         user.set_password(password)

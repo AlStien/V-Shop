@@ -153,7 +153,7 @@ class LoginAPIView(APIView):
 
     def post(self, request):
         email = (request.data.get("email",))
-        email = email.lower()
+        # email = email.lower()
         password = request.data.get("password",)
         try:
             entered_usr = NewUser.objects.get(email__iexact=email)
@@ -189,7 +189,7 @@ class EmailVerifyView(APIView):
             
 
     def post(self, request):
-        email = request.data.get("email",).lower()
+        email = request.data.get("email",)
         if NewUser.objects.filter(email = email).exists():
             send_otp(email)
             message = {'message':'OTP sent to registered Email'}
@@ -203,7 +203,7 @@ class PasswordChangeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        email = request.data.get("email",)
+        email = request.data.get("email",) or request.user.email
         password = request.data.get("new password")
         if OTP.objects.filter(otpEmail__iexact = email).exists():
             if NewUser.objects.filter(email__iexact = email).exists():
@@ -223,21 +223,6 @@ class PasswordChangeView(APIView):
         else:
             message = {'message':'Email entered does not match the verified Email.'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-    permission_classes = [IsAuthenticated,]
-    def put(self, request, format=None):
-        
-        email = request.user.email
-
-        if OTP.objects.filter(otpEmail__iexact = email).exists():
-            if NewUser.objects.filter(email__iexact = email).exists():
-                user = NewUser.objects.get(email__iexact = request.user.email)
-                user.is_seller = True
-                user.save()
-                serializer = ProfileSerializer(user, many=False)
-                return Response(serializer.data)  
-        return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  
 
 # ------ Prime Membership -------
 class PrimeMember(APIView):
