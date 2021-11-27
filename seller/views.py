@@ -1,21 +1,17 @@
+# ------ rest framework imports -------
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-# import from base app
+# ------ base App Imports -------
 from base.models import NewUser, OTP
 from base.serializers import ProfileSerializer
 from base.models import NewUser
+# ------ seller_product App imports -------
+from seller_product.models import Product 
+from seller_product.serializers import ProductsViewSerializer
 
-# import from seller_product app
-from seller_product.models import (
-            Product, 
-)
-from seller_product.serializers import (
-    ProductsViewSerializer,
-)
-
-# Create your views here.
+# ------ To Get List of all Sellers -------
 class SellerListView(APIView):
 
     permission_classes = [AllowAny]
@@ -24,6 +20,7 @@ class SellerListView(APIView):
         serializer = ProfileSerializer(users, many = True)
         return Response(serializer.data)
 
+# ------ To Become Seller -------
 class BecomeSellerView(APIView):
 
     permission_classes = [IsAuthenticated,]
@@ -40,6 +37,7 @@ class BecomeSellerView(APIView):
                 return Response(serializer.data)  
         return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  
 
+# ------ Seller Dashboard -------
 class SellerProductsView(APIView):
     permission_classes = [IsAuthenticated,]
     def get(self, request, format = None):

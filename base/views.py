@@ -1,18 +1,27 @@
+# ------ rest framework imports -------
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+# ------ For Sending E-Mail -------
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.hashers import make_password, check_password
-from django.utils import timezone
-from base.models import NewUser, OTP
-from .serializers import AccountSerializer, CheckVerify, LoginUserSerializer, ProfileSerializer, OTPSerializer
-from VShop.settings import EMAIL_HOST_USER
-import random, datetime
-from base.models import NewUser
 from django.contrib.auth.password_validation import validate_password
+from VShop.settings import EMAIL_HOST_USER
+# ------ Imports for User Views -------
+from base.models import NewUser, OTP
+from .serializers import (
+    AccountSerializer,
+    CheckVerify,
+    LoginUserSerializer,
+    ProfileSerializer,
+    OTPSerializer,
+)
+# ------ Utilities -------
+import random, datetime
+from django.utils import timezone
 
-# send otp to required email
+# ------ For Sending OTP to passed E-Mail -------
 def send_otp(email):
     # generating 4-digit OTP
     otp = random.randint(1000, 9999)
@@ -34,6 +43,7 @@ def send_otp(email):
 
     OTP.objects.create(otp = otp, otpEmail = email, time_created = timezone.now())
 
+# ------ To Get List of All Accounts -------
 class AccountList(APIView):
     permission_classes = (AllowAny,)
     
@@ -72,6 +82,7 @@ class AccountList(APIView):
             except:
                 return Response({'message': 'Please Enter a valid password. Password should have atleast 1 Capital Letter, 1 Number and 1 Special Character in it.'},status=status.HTTP_400_BAD_REQUEST)
 
+# ------ User Profile -------
 class AccountDetails(APIView):
     # get a specific account details
     def get(self, request, format = None):
@@ -95,6 +106,7 @@ class AccountDetails(APIView):
         user.delete()
         return Response({'message': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)
 
+# ------ To Verify OTP -------
 class OTPView(APIView):
     permission_classes = (AllowAny,)
 
@@ -133,6 +145,7 @@ class OTPView(APIView):
                 message = {'message':'OTP doesn\'t match'}
                 return Response(message,status=status.HTTP_401_UNAUTHORIZED)
 
+# ------ Login -------
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
 
@@ -159,6 +172,7 @@ class LoginAPIView(APIView):
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
         # check_pswd returns True for match
 
+# ------ To Verify Email and Send OTP to it -------
 class EmailVerifyView(APIView):
     permission_classes = (AllowAny,)
 
@@ -183,6 +197,7 @@ class EmailVerifyView(APIView):
             message = {'message':'No matching user found'}
             return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+# ------ Password Reset -------
 class PasswordChangeView(APIView):
     permission_classes = (AllowAny,)
 
@@ -223,6 +238,7 @@ class PasswordChangeView(APIView):
     #             return Response(serializer.data)  
     #     return Response(message = {'message':'incorrect credentials'}, status=status.HTTP_204_NO_CONTENT)  
 
+# ------ Prime Membership -------
 class PrimeMember(APIView):
 
     permission_classes = [IsAuthenticated,]
