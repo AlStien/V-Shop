@@ -153,6 +153,7 @@ class LoginAPIView(APIView):
 
     def post(self, request):
         email = (request.data.get("email",))
+        email = email.lower()
         password = request.data.get("password",)
         try:
             entered_usr = NewUser.objects.get(email__iexact=email)
